@@ -1,0 +1,26 @@
+[
+  {
+    "id": "english-action",
+    "language": "en",
+    "reference": "The project team will send the revised plan on Friday.",
+    "hypothesis": "The project team will send the revised plan on Friday."
+  },
+  {
+    "id": "simplified-chinese-decision",
+    "language": "zh-CN",
+    "reference": "团队确认下周提交最终报告。",
+    "hypothesis": "团队确认下周提交最终报告。"
+  },
+  {
+    "id": "indonesian-risk",
+    "language": "id",
+    "reference": "Tim perlu memeriksa risiko biaya sebelum persetujuan.",
+    "hypothesis": "Tim perlu memeriksa risiko biaya sebelum persetujuan."
+  },
+  {
+    "id": "code-switch",
+    "language": "mixed",
+    "reference": "Please kirim laporan besok，团队会先审核。",
+    "hypothesis": "Please kirim laporan besok，团队会先审核。"
+  }
+]

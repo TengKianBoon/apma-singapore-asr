@@ -1,0 +1,38 @@
+﻿# Secrets
+.env
+.env.local
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs
+logs/
+*.log
+
+# Audio / video files - do not commit meeting recordings
+*.mp3
+*.m4a
+*.wav
+*.mp4
+*.webm
+*.aac
+*.flac
+
+# Output files
+/outputs/
+/transcripts/
+/minutes/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# Runtime job data - ignore runtime job folders, but allow tracked README
+jobs/
+!jobs/README.md

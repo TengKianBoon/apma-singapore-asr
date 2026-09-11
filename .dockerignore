@@ -1,0 +1,30 @@
+.git
+.gitignore
+.env
+.env.local
+__pycache__/
+*.pyc
+.venv/
+venv/
+logs/
+*.log
+
+# Exclude audio files from build context
+sample_audio/*.mp3
+sample_audio/*.m4a
+sample_audio/*.wav
+sample_audio/*.flac
+sample_audio/*.mp4
+sample_audio/*.webm
+
+# Runtime job data (tracked README allowed)
+jobs/
+!jobs/README.md
+
+outputs/
+transcripts/
+minutes/
+
+.DS_Store
+Thumbs.db
+.vscode/

@@ -1,0 +1,41 @@
+{
+  "schema_version": "apma.public-live-verification.v1",
+  "verification_date": "2026-09-11",
+  "scope": "Two bounded live provider calls on the same synthetic, non-private audio fixture",
+  "input": {
+    "duration_seconds": 11.627438,
+    "sha256": "85146ff4d6b87e23caf728885d97588165db3628ecb1ec6638487ab9e2e6895a"
+  },
+  "runs": [
+    {
+      "provider_code": "M3ASR",
+      "provider": "meralion",
+      "requested_model": "MERaLiON-3-3B-ASR-Consortium",
+      "resolved_model": "MERaLiON/MERaLiON-3-3B-ASR-CTM",
+      "job_state": "completed",
+      "billing_mode": "trial_free",
+      "hard_cap_usd": 0.01,
+      "actual_cost_usd": 0.0,
+      "ignored_retained_output_sha256": "497f5f3897fc43481fee4accc7f801af432e0b8d1bdd1b909c45ce338168d3b3"
+    },
+    {
+      "provider_code": "QwenA3FT",
+      "provider": "alibaba",
+      "requested_model": "qwen-audio-3.0-asr-flash-filetrans",
+      "resolved_model": "qwen-audio-3.0-asr-flash-filetrans",
+      "job_state": "completed",
+      "staging_mode": "data_uri",
+      "provider_native_timing": true,
+      "provider_speaker_count": 1,
+      "hard_cap_usd": 0.01,
+      "estimated_cost_usd": 0.00042,
+      "actual_cost_usd": 0.000315,
+      "ignored_retained_output_sha256": "094f097d4a6abd49627fcdc21c66c8aad83d10f471eeb051e08f69a496370ea5"
+    }
+  ],
+  "privacy": {
+    "real_meeting_audio_used": false,
+    "credentials_committed": false,
+    "runtime_jobs_committed": false
+  }
+}

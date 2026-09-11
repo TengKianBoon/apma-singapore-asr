@@ -1,0 +1,54 @@
+name: APMA dry-run CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DRY_RUN: "true"
+      TRANSCRIPTION_ENGINE: mock
+      ENABLE_LIVE_OPENAI_TRANSCRIPTION: "false"
+      ENABLE_LIVE_MERALION_TRANSCRIPTION: "false"
+      ENABLE_LIVE_GEMINI_TRANSCRIPTION: "false"
+      ENABLE_LIVE_QWEN_FILETRANS_TRANSCRIPTION: "false"
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Reject tracked secrets and private audio formats
+        shell: bash
+        run: |
+          test -z "$(git ls-files '.env' '.env.local' '*.key' '*.pem')"
+          unexpected_audio="$(
+            git ls-files '*.mp3' '*.m4a' '*.wav' '*.mp4' '*.webm' '*.aac' \
+              '*.flac' '*.ogg' '*.wma' '*.3gp' '*.3ga' '*.qcp' '*.mpeg' \
+              '*.mpga' '*.amr' \
+              | grep -Ev '^sample_audio/synthetic_legacy_amr_(nb|wb)\.amr$' \
+              || true
+          )"
+          test -z "$unexpected_audio"
+
+      - name: Build the reproducible APMA runtime
+        run: docker build --tag apma-ci:test .
+
+      - name: Run APMA tests without provider calls
+        run: |
+          docker run --rm \
+            --env DRY_RUN=true \
+            --env TRANSCRIPTION_ENGINE=mock \
+            --env ENABLE_LIVE_OPENAI_TRANSCRIPTION=false \
+            --env ENABLE_LIVE_MERALION_TRANSCRIPTION=false \
+            --env ENABLE_LIVE_GEMINI_TRANSCRIPTION=false \
+            --env ENABLE_LIVE_QWEN_FILETRANS_TRANSCRIPTION=false \
+            --volume "${{ github.workspace }}:/app" \
+            apma-ci:test \
+            python -m pytest -q
