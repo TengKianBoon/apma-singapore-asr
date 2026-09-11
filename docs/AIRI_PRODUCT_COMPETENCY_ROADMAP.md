@@ -97,6 +97,28 @@ rapid provider corrections, but it should not be presented as senior field
 deployment proof until external users, customer environments, production
 incidents, adoption, and commercial outcomes exist.
 
+### Shipped proof from the professional-workflow tranche
+
+The 2026-09-11 tranche strengthens the evidence without changing that claim
+boundary:
+
+- **Solution architecture:** an outcome-led experience was fitted to the
+  existing provider, evidence, job-state, review, and export contracts; the
+  browser remains a thin control plane and heavy processing remains in Python.
+- **FDE behaviour:** the change integrated actual file upload, cost preflight,
+  model routing, job reopening, byte-range audio seeking, exception correction,
+  and speaker mapping rather than producing a disconnected mock-up.
+- **Field correction:** synthetic browser QA exposed tablet grid stretching;
+  the smallest layout fix was applied and verified at the failing width.
+- **AIRI-aligned practice:** usability improved while dry-run, cost approval,
+  provider provenance, confidentiality, and clean publication controls stayed
+  intact.
+
+See [the role-specific evidence map](SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md)
+and [synthetic browser QA record](evidence/ui-flow-showcase-2026-09-11.json).
+These artifacts improve inspectability; they do not replace the external pilot,
+adoption, production, and commercial evidence still required below.
+
 Portfolio statements should therefore be specific:
 
 > APMA provides evidence of AI solution architecture, responsible product

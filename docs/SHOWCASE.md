@@ -6,10 +6,27 @@ records while keeping provider evidence, cost, provenance, and human judgment
 separate. It processes files asynchronously; it is not a real-time meeting
 assistant.
 
-![APMA dashboard using synthetic configuration](assets/apma-dashboard-synthetic.png)
+![APMA professional dashboard using a synthetic legacy-audio fixture](assets/apma-dashboard-synthetic.png)
 
 The screenshot uses synthetic configuration only. It contains no real meeting
 audio, transcript, credential, or private job data.
+
+## Browser-tested professional workflow
+
+The current dashboard guides the operator through
+`Audio → Outcome → Cost → Review`. Provider/model identifiers remain available
+under advanced details, while the primary choices describe the result the user
+wants: Fast Draft, SEA Multilingual, Speaker-labelled, or Compare & Verify.
+
+On 2026-09-11, the actual browser flow was exercised in Docker with the tracked
+`synthetic_legacy_amr_wb.amr` fixture. File selection, upload progress, duration
+and chunk coverage, cost preflight, all four outcome choices, MERaLiON
+preference for SEA Multilingual, and the approval boundary passed. No provider
+run was approved or started. A tablet grid-stretch defect found during that
+test was fixed and rechecked at 800 pixels.
+
+See the machine-readable
+[synthetic UI verification record](evidence/ui-flow-showcase-2026-09-11.json).
 
 ## Why this is more than an API wrapper
 
@@ -93,3 +110,5 @@ are outside this repository.
 
 For the product, governance, adoption, and AIRI-aligned evidence plan, see the
 [AI product competency roadmap](AIRI_PRODUCT_COMPETENCY_ROADMAP.md).
+For a role-specific and limitation-aware evidence chain, see
+[Solution Architecture, FDE and AIRI Evidence](SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md).

@@ -1,0 +1,68 @@
+{
+  "schema_version": "apma.public-ui-verification.v1",
+  "verification_date": "2026-09-11",
+  "scope": "Professional local-dashboard workflow and responsive-layout verification",
+  "environment": {
+    "runtime": "Docker",
+    "dry_run": true,
+    "storage": "ephemeral container directory",
+    "credential_values": "synthetic placeholders used only to expose readiness states",
+    "paid_provider_calls": 0
+  },
+  "input": {
+    "repository_path": "sample_audio/synthetic_legacy_amr_wb.amr",
+    "classification": "tracked synthetic fixture",
+    "private_audio_used": false
+  },
+  "automated_verification": {
+    "environment": "Docker with DRY_RUN=true and TRANSCRIPTION_ENGINE=mock",
+    "result": "282 passed"
+  },
+  "checks": [
+    {
+      "id": "file-selection",
+      "result": "PASS",
+      "evidence": "The selected synthetic AMR filename appeared in the single file-import control."
+    },
+    {
+      "id": "upload-progress",
+      "result": "PASS",
+      "evidence": "The local upload reached 100 percent and displayed source-hash retention status."
+    },
+    {
+      "id": "audio-preflight",
+      "result": "PASS",
+      "evidence": "The UI displayed one second of recording coverage, one planned chunk, and the maximum approved cost before any provider run."
+    },
+    {
+      "id": "outcome-routing",
+      "result": "PASS",
+      "evidence": "Fast Draft, SEA Multilingual, Speaker-labelled, and Compare & Verify were selectable; SEA Multilingual preferred the configured MERaLiON specialist route."
+    },
+    {
+      "id": "provider-disclosure",
+      "result": "PASS",
+      "evidence": "Advanced details disclosed the provider and model while the primary flow remained outcome-led."
+    },
+    {
+      "id": "paid-run-boundary",
+      "result": "PASS",
+      "evidence": "No transcription started without the separate approval checkbox; this verification did not approve or start a provider run."
+    },
+    {
+      "id": "tablet-layout",
+      "result": "PASS_AFTER_FIX",
+      "evidence": "At 800 pixels, browser QA found and corrected grid stretching; the 1064-pixel import card and 161-pixel recent-jobs card retained independent intrinsic heights."
+    },
+    {
+      "id": "automated-regression",
+      "result": "PASS",
+      "evidence": "The complete Docker dry-run suite passed after the professional workflow implementation."
+    }
+  ],
+  "limitations": [
+    "This verifies browser workflow, presentation, and control behaviour, not transcription accuracy.",
+    "Provider readiness used placeholder credentials and is not credential-validity evidence.",
+    "Authenticated hosting, background workers, multi-user roles, and external-user adoption remain unproven."
+  ]
+}
