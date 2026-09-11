@@ -1,12 +1,13 @@
 # APMA — Singapore Multilingual ASR Showcase
 
-An auditable, safety-first workflow for turning multilingual audio into
-provider-attributed transcripts, reviewable evidence, meeting minutes, and
-portable exports.
+An auditable, safety-first workflow for turning existing multilingual audio
+files into provider-attributed transcripts, reviewable evidence, optional
+minutes, and portable exports. APMA is file-based and asynchronous; it is not a
+real-time meeting assistant.
 
 [![CI](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml)
 
-![APMA synthetic-data dashboard](docs/assets/apma-dashboard-synthetic.png)
+![APMA professional dashboard using a synthetic legacy-audio fixture](docs/assets/apma-dashboard-synthetic.png)
 
 ## Why APMA
 
@@ -41,7 +42,7 @@ runs are opt-in; development and CI remain dry-run by default.
 
 The defensible portfolio claim is therefore not "perfect Hokkien ASR." It is a
 governed, reviewable method for turning uneven local-language model capability
-into useful Singapore meeting records.
+into useful Southeast Asian recorded-conversation evidence.
 
 ## What You Can Inspect
 
@@ -52,9 +53,13 @@ into useful Singapore meeting records.
 - Raw provider evidence, provider-native timing/speaker metadata, deterministic
   transcript exports, comparison, reconciliation, and human-review history.
 - A local dashboard for upload, exact budget approval, transcription, review,
-  minutes generation, and retained output paths.
+  minutes generation, and retained output paths. Its guided
+  `Audio → Outcome → Cost → Review` flow keeps provider details available but
+  secondary to the user's task.
 - Docker-tested provider adapters and bounded live verification on synthetic,
   non-private audio for MERaLiON and Qwen Filetrans.
+- Browser-tested synthetic import, upload progress, outcome routing, cost
+  preflight, provider disclosure, and responsive layout, with no paid call.
 
 Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [architecture](ARCHITECTURE.md) and
@@ -62,6 +67,8 @@ Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 The [AI product competency and AIRI roadmap](docs/AIRI_PRODUCT_COMPETENCY_ROADMAP.md)
 maps the work to product decisions, governance, security, trust, adoption, and
 measurable value without claiming an AIRI certification.
+The [solution architecture and FDE evidence map](docs/SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md)
+links role claims to inspectable artifacts, browser QA, and explicit gaps.
 Public releases must follow the
 [clean-history release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md).
 
@@ -88,7 +95,9 @@ This acknowledgement does not imply endorsement of APMA by MERaLiON or A*STAR.
 
 ## Phase 1 Goal
 
-Upload audio file → chunk if needed → transcribe → generate minutes → export outputs.
+Inspect an existing audio file → chunk safely → transcribe in batch → compare
+and review exceptions → export accountable outputs. Generate minutes only when
+they are useful as a separate derived step.
 
 ## Safety Rules
 

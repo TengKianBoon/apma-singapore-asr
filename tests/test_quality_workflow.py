@@ -308,23 +308,19 @@ def test_dashboard_exposes_quality_action_and_keeps_simple_action():
         "gpt4oDiarz": "gpt-4o-transcribe-diarize",
         "Gem35T": "gemini-3.5-transcribe",
     }
-    assert "Quality Transcription" in local_dashboard.DASHBOARD_HTML
-    assert "Run Selected Simple Model" in local_dashboard.DASHBOARD_HTML
-    assert "Run Fixed Quality: gptTr + gpt4oDiarz + Gem35T" in local_dashboard.DASHBOARD_HTML
-    assert "Resume Quality — reuse completed chunks" in local_dashboard.DASHBOARD_HTML
-    assert "historicalJobErrors" in local_dashboard.DASHBOARD_HTML
-    assert "Run Simple with ${selectedSimpleModel}" in local_dashboard.DASHBOARD_HTML
-    assert "Simple Transcription provider/model" in local_dashboard.DASHBOARD_HTML
-    assert "OpenAI gpt-transcribe + OpenAI gpt-4o-transcribe-diarize + Gemini gemini-3.5-transcribe" in local_dashboard.DASHBOARD_HTML
-    assert "gpt4oDiarz and Gem35T supply provider-native speaker evidence" in local_dashboard.DASHBOARD_HTML
-    assert "Each Quality provider keeps its own script" in local_dashboard.DASHBOARD_HTML
-    assert "APMA does not force the three transcripts to look alike" in local_dashboard.DASHBOARD_HTML
+    assert "Compare &amp; Verify" in local_dashboard.DASHBOARD_HTML
+    assert "Fast Draft" in local_dashboard.DASHBOARD_HTML
+    assert "SEA Multilingual" in local_dashboard.DASHBOARD_HTML
+    assert "Speaker-labelled" in local_dashboard.DASHBOARD_HTML
+    assert "Advanced provider details" in local_dashboard.DASHBOARD_HTML
+    assert "provider candidates separately" in local_dashboard.DASHBOARD_HTML
     quality_javascript = local_dashboard.DASHBOARD_HTML.split(
-        "async function runQualityJob()", 1
-    )[1].split("async function estimateMinutes()", 1)[0]
+        'payload = await api("/api/quality/run"', 1
+    )[1].split("} else {", 1)[0]
     assert "model:" not in quality_javascript
     assert "/api/quality/run" in local_dashboard.DASHBOARD_HTML
-    assert "Open Human Review" in local_dashboard.DASHBOARD_HTML
+    assert "/api/run" in local_dashboard.DASHBOARD_HTML
+    assert "Review flagged areas" in local_dashboard.DASHBOARD_HTML
 
 
 def test_quality_failure_names_the_provider_that_failed(tmp_path):

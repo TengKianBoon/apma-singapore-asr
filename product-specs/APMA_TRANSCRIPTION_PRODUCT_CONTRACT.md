@@ -10,10 +10,13 @@ truthfully rather than imply the target has already been reached.
 
 ## Product Purpose
 
-APMA is a local-first, long-form meeting transcription and minutes application
-optimized for English, Singapore English/Singlish, Mandarin Chinese, Hokkien,
-Bahasa Indonesia, and natural code-switching. It must preserve source evidence,
-control billable usage, retain provider outputs, and support useful human review.
+APMA is a local-first, file-based transcription-assurance application for
+existing long-form recordings. It is optimized for English, Singapore
+English/Singlish, Mandarin Chinese, Hokkien, Bahasa Indonesia, and natural
+code-switching. It processes files asynchronously rather than competing as a
+real-time meeting assistant. It must preserve source evidence, control billable
+usage, retain provider outputs, and support useful human review. Minutes are an
+optional derived output, not the primary product category.
 
 ## Input And Legacy Media
 

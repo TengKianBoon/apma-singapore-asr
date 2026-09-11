@@ -38,7 +38,7 @@ def test_dashboard_estimates_configured_openai_models(tmp_path, monkeypatch):
     gemini = next(item for item in status["models"] if item["provider"] == "google")
     assert gemini["runnable"] is False
     assert gemini["price_per_minute_usd"] == cfg.gemini_transcribe_price_per_minute_usd
-    assert "Simple Transcription provider/model" in local_dashboard.DASHBOARD_HTML
+    assert "Advanced provider details" in local_dashboard.DASHBOARD_HTML
     assert "setup required" in local_dashboard.DASHBOARD_HTML
 
     assert cfg.meralion_transcription_model in estimate["models"]
@@ -106,8 +106,8 @@ def test_revised_quality_estimate_includes_all_three_paid_providers_for_141_56_m
     assert quality["workspace_cap_usd"] == 5.0
     assert quality["within_cap"] is True
     assert "144.300000" not in local_dashboard.DASHBOARD_HTML
-    assert "Paid estimate:" in local_dashboard.DASHBOARD_HTML
-    assert "reserve included" in local_dashboard.DASHBOARD_HTML
+    assert "Estimated provider spend" in local_dashboard.DASHBOARD_HTML
+    assert "safety reserve" in local_dashboard.DASHBOARD_HTML
 
     cfg.openai_price_per_minute[cfg.openai_recommended_model] = 0.0105
     cfg.openai_price_per_minute[cfg.openai_diarize_model] = 0.0105
@@ -292,8 +292,8 @@ def test_dashboard_upload_limit_is_separate_from_openai_chunk_limit(tmp_path):
 
 
 def test_dashboard_formats_object_errors_for_users():
-    assert "function formatErrorPart" in local_dashboard.DASHBOARD_HTML
     assert "item.message" in local_dashboard.DASHBOARD_HTML
+    assert 'aria-live="polite"' in local_dashboard.DASHBOARD_HTML
 
 
 def test_dashboard_status_exposes_minutes_styles():
@@ -826,9 +826,9 @@ def test_dashboard_exposes_only_existing_allowlisted_transcript_exports(tmp_path
         "vtt": f"/api/jobs/{job_id}/exports/vtt",
     }
     assert result["project_paths"] == audio_project
-    assert "exportLinks" in local_dashboard.DASHBOARD_HTML
-    assert "Open transcript HTML" in local_dashboard.DASHBOARD_HTML
-    assert "Audio subproject folder addresses" in local_dashboard.DASHBOARD_HTML
+    assert "exportGrid" in local_dashboard.DASHBOARD_HTML
+    assert "Transcript HTML" in local_dashboard.DASHBOARD_HTML
+    assert "Local project folders" in local_dashboard.DASHBOARD_HTML
     assert "Copy folder addresses" in local_dashboard.DASHBOARD_HTML
 
 
@@ -882,3 +882,154 @@ def test_dashboard_html_export_response_sets_security_headers(tmp_path):
     assert handler.headers["X-Content-Type-Options"] == "nosniff"
     assert handler.headers["Content-Disposition"].startswith("inline;")
     assert b"safe transcript" in handler.wfile.getvalue()
+
+
+def test_professional_dashboard_exposes_a_lean_user_flow():
+    html = local_dashboard.DASHBOARD_HTML
+
+    assert "APMA Transcription Assurance" in html
+    assert "Reviewable transcription for Southeast Asia's recorded conversations" in html
+    assert "Fast Draft" in html
+    assert "SEA Multilingual" in html
+    assert "Speaker-labelled" in html
+    assert "Compare &amp; Verify" in html
+    assert "Recent jobs" in html
+    assert "/api/jobs?limit=12" in html
+    assert 'role="tablist"' in html
+    assert "jobAudio.currentTime" in html
+    assert "Optional minutes" in html
+    assert "APMA Local Dashboard" not in html
+
+
+def test_dashboard_lists_and_reopens_retained_jobs(tmp_path, monkeypatch):
+    storage = tmp_path / "jobs"
+    monkeypatch.setattr(local_dashboard, "STORAGE_PATH", storage)
+    job_id = "job-professional-flow"
+    job_dir = storage / job_id
+    audio_dir = job_dir / "audio" / "original"
+    outputs_dir = job_dir / "outputs"
+    audio_dir.mkdir(parents=True)
+    outputs_dir.mkdir(parents=True)
+    audio_path = audio_dir / "family-conversation.wav"
+    generate_sine_wav(str(audio_path), duration_sec=1.0, framerate=8000)
+    transcript_json = outputs_dir / "full_transcript.json"
+    transcript_txt = outputs_dir / "full_transcript.txt"
+    transcript_json.write_text(
+        json.dumps(
+            {
+                "segments": [
+                    {"start_sec": 0.0, "end_sec": 1.0, "speaker": "Speaker 1", "text": "Hello"}
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    transcript_txt.write_text("Hello", encoding="utf-8")
+    manifest = {
+        "job_id": job_id,
+        "state": "review_required",
+        "created_at": "2026-09-11T01:00:00Z",
+        "updated_at": "2026-09-11T02:00:00Z",
+        "source": {"original_filename": "family-conversation.wav", "sha256": "fixture-sha"},
+        "preprocess": {"duration_seconds": 61.5},
+        "audio_project": {
+            "subproject_folder": str(job_dir),
+            "original_folder": str(audio_dir),
+            "original": {"path": str(audio_path)},
+        },
+        "outputs": {
+            "full_transcript_json": str(transcript_json),
+            "full_transcript_txt": str(transcript_txt),
+        },
+        "quality": {
+            "review_url": "/review",
+            "providers": {"M3ASR": {}, "gptTr": {}, "Gem35T": {}},
+            "stages": {"REVIEW": {"unresolved_windows": 2}},
+        },
+        "estimated_cost_usd": 0.22,
+        "actual_cost_usd": 0.18,
+    }
+    (job_dir / "job_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+
+    listed = local_dashboard.list_dashboard_jobs()
+    detail = local_dashboard.dashboard_job(job_id)
+
+    assert listed["jobs"][0]["title"] == "family-conversation.wav"
+    assert listed["jobs"][0]["display_state"] == "review_required"
+    assert listed["jobs"][0]["duration_seconds"] == 61.5
+    assert listed["jobs"][0]["review_required_count"] == 2
+    assert detail["audio_url"] == f"/api/jobs/{job_id}/audio"
+    assert detail["review_url"] == f"/review?job_id={job_id}"
+    assert detail["outputs"]["full_transcript_json"]["segments"][0]["text"] == "Hello"
+    assert local_dashboard._match_dashboard_job_request(
+        f"/api/jobs/{job_id}/audio"
+    ) == (job_id, "audio")
+    with pytest.raises(ValueError):
+        local_dashboard.dashboard_job("../outside")
+
+
+def test_dashboard_audio_response_supports_byte_range_seeking(tmp_path):
+    class StubHandler:
+        def __init__(self):
+            self.status = None
+            self.headers = {"Range": "bytes=2-5"}
+            self.response_headers = {}
+            self.wfile = io.BytesIO()
+
+        def send_response(self, status):
+            self.status = status
+
+        def send_header(self, key, value):
+            self.response_headers[key] = value
+
+        def end_headers(self):
+            return None
+
+    audio_path = tmp_path / "clip.wav"
+    audio_path.write_bytes(b"0123456789")
+    handler = StubHandler()
+
+    local_dashboard._media_response(handler, audio_path)
+
+    assert handler.status == 206
+    assert handler.response_headers["Content-Range"] == "bytes 2-5/10"
+    assert handler.response_headers["Accept-Ranges"] == "bytes"
+    assert handler.wfile.getvalue() == b"2345"
+
+
+def test_review_progress_updates_recent_job_state_and_count(tmp_path, monkeypatch):
+    storage = tmp_path / "jobs"
+    monkeypatch.setattr(local_dashboard, "STORAGE_PATH", storage)
+    job_dir = storage / "job-review-progress"
+    job_dir.mkdir(parents=True)
+    manifest = {
+        "job_id": "job-review-progress",
+        "state": "review_required",
+        "quality": {
+            "overall_status": "REVIEW_REQUIRED",
+            "stages": {"REVIEW": {"status": "completed", "unresolved_windows": 5}},
+        },
+    }
+    (job_dir / "job_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+
+    local_dashboard._sync_quality_review_status(
+        "job-review-progress", {"statistics": {"unresolved_windows": 2}}
+    )
+    updated = json.loads((job_dir / "job_manifest.json").read_text(encoding="utf-8"))
+
+    assert updated["state"] == "review_required"
+    assert updated["quality"]["stages"]["REVIEW"]["unresolved_windows"] == 2
+    assert local_dashboard.list_dashboard_jobs()["jobs"][0]["review_required_count"] == 2
+
+    local_dashboard._sync_quality_review_status(
+        "job-review-progress", {"statistics": {"unresolved_windows": 0}}
+    )
+    completed = json.loads((job_dir / "job_manifest.json").read_text(encoding="utf-8"))
+
+    assert completed["state"] == "complete"
+    assert completed["quality"]["overall_status"] == "COMPLETE"
+    assert completed["quality"]["stages"]["REVIEW"]["unresolved_windows"] == 0

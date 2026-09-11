@@ -44,6 +44,33 @@ showcase.
 13. `scripts/local_dashboard.py` is a local browser interface over the service
     layer. It must not become the owner of heavy processing.
 
+## Experience And Control Plane
+
+`web/dashboard.html` implements the outcome-led operator journey without
+duplicating processing logic. It consumes bounded local endpoints for provider
+readiness, upload/preflight, job lists, job details, audio playback, approved
+runs, review, minutes, and exports.
+
+The dashboard design preserves these architectural decisions:
+
+- user-facing modes select an existing configured provider route or the fixed
+  comparison workflow; the browser does not invent a separate routing engine;
+- real upload progress and job states are visible, but durable distributed
+  queues and leave-the-page processing are not claimed by the local MVP;
+- recent jobs are derived from retained manifests rather than a competing UI
+  database;
+- byte-range audio responses support timestamp seeking while path validation
+  prevents a job identifier from escaping the storage root;
+- transcript segments seek audio by retained application/provider timing, while
+  exact exception correction and speaker relabelling remain provenance-bearing
+  human decisions; and
+- minutes and presentation exports remain visibly derived from the canonical
+  transcript rather than becoming new transcript authorities.
+
+This boundary allows the interface to improve independently while Python
+services remain the single owner of provider calls, costs, retries, evidence,
+and final job state.
+
 ## Data Authority
 
 - Job manifest: processing state, input/chunks, outputs, errors, and costs.

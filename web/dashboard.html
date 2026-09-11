@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>APMA Transcription Assurance</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #132238;
+      --muted: #607086;
+      --line: #d9e1ea;
+      --soft-line: #e8edf3;
+      --surface: #f4f7fa;
+      --panel: #ffffff;
+      --navy: #153b5b;
+      --teal: #087f72;
+      --teal-dark: #06685f;
+      --teal-soft: #e9f7f4;
+      --blue-soft: #edf5ff;
+      --amber: #9a5b08;
+      --amber-soft: #fff7e8;
+      --red: #a72c2c;
+      --red-soft: #fff0f0;
+      --green: #16715b;
+      --green-soft: #eaf7f2;
+      --shadow: 0 18px 48px rgba(19, 34, 56, 0.09);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: var(--surface);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--surface); }
+    button, input, select, summary { font: inherit; }
+    button, summary, [role="button"] { -webkit-tap-highlight-color: transparent; }
+    button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, [tabindex]:focus-visible, a:focus-visible {
+      outline: 3px solid rgba(8, 127, 114, 0.28);
+      outline-offset: 2px;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+    }
+    .topbar {
+      width: min(1360px, calc(100% - 32px));
+      margin: auto;
+      min-height: 70px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      display: grid;
+      place-items: center;
+      background: var(--navy);
+      color: white;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+    }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 2px; font-size: 17px; letter-spacing: -0.01em; }
+    h2 { margin-bottom: 4px; font-size: 17px; }
+    h3 { margin-bottom: 5px; font-size: 14px; }
+    p { line-height: 1.55; }
+    .tagline { margin: 0; color: var(--muted); font-size: 12px; }
+    .status-pill, .state-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid #b8dfd7;
+      border-radius: 999px;
+      background: var(--green-soft);
+      color: var(--green);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .status-pill.warn, .state-pill.processing { border-color: #edd39f; background: var(--amber-soft); color: var(--amber); }
+    .state-pill.review_required { border-color: #e8c77f; background: var(--amber-soft); color: var(--amber); }
+    .state-pill.failed, .state-pill.cancelled { border-color: #ecc1c1; background: var(--red-soft); color: var(--red); }
+    .app-shell {
+      width: min(1360px, calc(100% - 32px));
+      margin: 22px auto 40px;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .rail { display: grid; gap: 16px; align-items: start; }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-head {
+      padding: 17px 18px 14px;
+      border-bottom: 1px solid var(--soft-line);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .panel-head p { margin: 0; color: var(--muted); font-size: 12px; }
+    .panel-body { padding: 18px; }
+    .stepper {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin: 0 0 18px;
+      padding: 0;
+    }
+    .stepper li { color: var(--muted); font-size: 11px; font-weight: 700; }
+    .stepper li::before {
+      content: "";
+      display: block;
+      height: 4px;
+      margin-bottom: 7px;
+      border-radius: 999px;
+      background: #e3e8ee;
+    }
+    .stepper li.active { color: var(--teal); }
+    .stepper li.active::before, .stepper li.complete::before { background: var(--teal); }
+    .field { margin-bottom: 17px; }
+    .field > label, .field > .field-label {
+      display: block;
+      margin: 0 0 7px;
+      color: #2f4056;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .drop-zone {
+      min-height: 130px;
+      padding: 18px;
+      border: 1.5px dashed #9eb4c7;
+      border-radius: 12px;
+      background: #fbfcfe;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      cursor: pointer;
+      transition: 140ms ease;
+    }
+    .drop-zone:hover, .drop-zone.dragging { border-color: var(--teal); background: var(--teal-soft); }
+    .drop-zone strong { display: block; margin-bottom: 5px; font-size: 15px; }
+    .drop-zone small { display: block; color: var(--muted); line-height: 1.45; }
+    .selected-file { margin-top: 9px; font-weight: 750; overflow-wrap: anywhere; }
+    .sr-file { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .progress-wrap { margin-top: 11px; }
+    .progress-track { height: 7px; border-radius: 999px; background: #e4eaf0; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0; background: var(--teal); transition: width 120ms linear; }
+    .progress-label { margin-top: 6px; color: var(--muted); font-size: 11px; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .mode-card {
+      min-height: 108px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+    .mode-card:hover { border-color: #9eb4c7; background: #fbfcfe; }
+    .mode-card[aria-pressed="true"] { border-color: var(--teal); background: var(--teal-soft); box-shadow: inset 0 0 0 1px var(--teal); }
+    .mode-card strong { display: block; margin-bottom: 5px; font-size: 12px; }
+    .mode-card span { display: block; color: var(--muted); font-size: 11px; line-height: 1.4; }
+    details { border-top: 1px solid var(--soft-line); padding-top: 11px; }
+    summary { color: var(--navy); cursor: pointer; font-size: 12px; font-weight: 800; }
+    .advanced-body { padding-top: 12px; }
+    select, input[type="text"] {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #bdc9d5;
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 15px 0 10px; }
+    .metric { min-width: 0; padding: 11px; border: 1px solid var(--soft-line); border-radius: 10px; background: #fbfcfd; }
+    .metric strong { display: block; font-size: 17px; overflow-wrap: anywhere; }
+    .metric span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
+    .approval { display: flex; gap: 9px; align-items: flex-start; margin: 13px 0; font-size: 12px; font-weight: 650; line-height: 1.45; }
+    .approval input { width: 17px; height: 17px; margin-top: 1px; flex: 0 0 auto; }
+    .button-row { display: flex; gap: 9px; flex-wrap: wrap; }
+    .button {
+      min-height: 42px;
+      border: 1px solid #c6d1dc;
+      border-radius: 9px;
+      padding: 9px 13px;
+      background: #f7f9fb;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 750;
+      text-decoration: none;
+    }
+    .button:hover { background: #edf2f6; }
+    .button.primary { border-color: var(--teal); background: var(--teal); color: #fff; }
+    .button.primary:hover { background: var(--teal-dark); }
+    .button.ghost { border-color: transparent; background: transparent; color: var(--teal); }
+    .button:disabled { opacity: 0.48; cursor: not-allowed; }
+    .button.block { width: 100%; }
+    .notice { margin-top: 13px; padding: 11px 12px; border-radius: 9px; border-left: 4px solid var(--teal); background: var(--blue-soft); color: #25445f; font-size: 12px; line-height: 1.5; }
+    .notice.error { border-left-color: var(--red); background: var(--red-soft); color: #782222; }
+    .recent-list { display: grid; gap: 7px; }
+    .recent-job {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--soft-line);
+      border-radius: 9px;
+      background: #fff;
+      color: var(--ink);
+      text-align: left;
+      cursor: pointer;
+    }
+    .recent-job:hover { background: #f8fafc; border-color: #b8c6d3; }
+    .recent-title { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 750; overflow-wrap: anywhere; }
+    .recent-meta { display: flex; justify-content: space-between; gap: 8px; align-items: center; color: var(--muted); font-size: 10px; }
+    .workspace { min-height: 700px; }
+    .workspace-head {
+      padding: 18px 20px 15px;
+      border-bottom: 1px solid var(--soft-line);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    .workspace-title { min-width: 0; }
+    .workspace-title h2 { font-size: 20px; overflow-wrap: anywhere; }
+    .workspace-title p { margin: 0; color: var(--muted); font-size: 12px; }
+    .workspace-empty { min-height: 620px; display: grid; place-items: center; padding: 30px; text-align: center; }
+    .empty-inner { max-width: 480px; }
+    .empty-icon { width: 62px; height: 62px; margin: 0 auto 16px; border-radius: 18px; display: grid; place-items: center; background: var(--teal-soft); color: var(--teal); font-size: 26px; }
+    .empty-inner h2 { font-size: 22px; }
+    .empty-inner p { color: var(--muted); }
+    .processing-view { padding: 28px 22px; }
+    .processing-card { max-width: 700px; margin: 70px auto; text-align: center; }
+    .spinner { width: 40px; height: 40px; margin: 0 auto 16px; border: 4px solid #dce6e5; border-top-color: var(--teal); border-radius: 50%; animation: spin 900ms linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; border-top-color: #dce6e5; } }
+    .processing-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 24px; }
+    .processing-steps span { padding-top: 8px; border-top: 3px solid #dce3ea; color: var(--muted); font-size: 10px; }
+    .processing-steps span.active { border-color: var(--teal); color: var(--teal); font-weight: 750; }
+    .job-content[hidden], .workspace-empty[hidden], .processing-view[hidden] { display: none; }
+    .job-toolbar { padding: 13px 18px; border-bottom: 1px solid var(--soft-line); background: #fbfcfd; }
+    audio { width: 100%; height: 42px; }
+    .tabs { display: flex; gap: 4px; padding: 0 18px; border-bottom: 1px solid var(--soft-line); overflow-x: auto; }
+    .tab {
+      min-height: 46px;
+      padding: 0 11px;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 750;
+      white-space: nowrap;
+    }
+    .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--teal); }
+    .tab-panel { padding: 20px; }
+    .tab-panel[hidden] { display: none; }
+    .transcript-list { display: grid; gap: 10px; }
+    .segment {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      gap: 14px;
+      padding: 13px 14px;
+      border: 1px solid var(--soft-line);
+      border-radius: 10px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .segment:hover { border-color: #adc0ce; background: #fbfcfd; }
+    .segment-meta { color: var(--muted); font-size: 10px; }
+    .segment-meta strong { display: block; margin-bottom: 5px; color: var(--navy); font-size: 11px; }
+    .segment p { margin: 0; white-space: pre-wrap; line-height: 1.55; font-size: 14px; }
+    .plain-output { margin: 0; min-height: 300px; max-height: 620px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid var(--soft-line); border-radius: 10px; background: #fbfcfd; padding: 15px; font: 13px/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .review-callout { padding: 18px; border: 1px solid #e7ca87; border-radius: 12px; background: var(--amber-soft); }
+    .review-callout p { color: #6f4b13; }
+    .export-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; }
+    .export-link { display: block; min-height: 76px; padding: 13px; border: 1px solid var(--line); border-radius: 10px; color: var(--navy); text-decoration: none; font-weight: 750; background: #fff; }
+    .export-link:hover { border-color: var(--teal); background: var(--teal-soft); }
+    .export-link small { display: block; margin-top: 5px; color: var(--muted); font-weight: 500; }
+    .trust-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 9px; margin-bottom: 14px; }
+    .trust-item { padding: 12px; border: 1px solid var(--soft-line); border-radius: 9px; background: #fbfcfd; }
+    .trust-item span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 10px; }
+    .trust-item strong { display: block; overflow-wrap: anywhere; font-size: 12px; }
+    .minutes-card { max-width: 620px; }
+    .minutes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .path-box { margin-top: 16px; }
+    .path-box pre { min-height: 0; max-height: 180px; }
+    .subtle { color: var(--muted); font-size: 11px; line-height: 1.5; }
+    @media (max-width: 980px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .rail { grid-template-columns: minmax(0, 1fr) minmax(260px, 0.7fr); }
+      .workspace { min-height: 600px; }
+    }
+    @media (max-width: 680px) {
+      .topbar, .app-shell { width: min(100% - 20px, 1360px); }
+      .topbar { min-height: 76px; align-items: flex-start; padding: 13px 0; }
+      .tagline { max-width: 230px; }
+      .status-pill { padding: 6px 8px; }
+      .app-shell { margin-top: 10px; }
+      .rail { grid-template-columns: 1fr; }
+      .mode-grid, .metrics, .minutes-grid { grid-template-columns: 1fr; }
+      .segment { grid-template-columns: 1fr; gap: 7px; }
+      .processing-steps { grid-template-columns: 1fr; text-align: left; }
+      .workspace-head { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">A</div>
+        <div>
+          <h1>APMA Transcription Assurance</h1>
+          <p class="tagline">Reviewable transcription for Southeast Asia's recorded conversations</p>
+        </div>
+      </div>
+      <span class="status-pill" id="providerStatus">Checking provider readiness</span>
+    </div>
+  </header>
+
+  <main class="app-shell">
+    <aside class="rail" aria-label="Create and resume transcription jobs">
+      <section class="panel">
+        <div class="panel-head">
+          <div><h2>New transcription</h2><p>Existing audio file · asynchronous processing</p></div>
+        </div>
+        <div class="panel-body">
+          <ol class="stepper" aria-label="Transcription steps">
+            <li class="active" data-step="1">Audio</li>
+            <li data-step="2">Outcome</li>
+            <li data-step="3">Cost</li>
+            <li data-step="4">Review</li>
+          </ol>
+
+          <div class="field">
+            <span class="field-label">1. Add an existing recording</span>
+            <div class="drop-zone" id="dropZone" role="button" tabindex="0" aria-label="Choose or drop a supported audio file">
+              <div>
+                <strong>Drop audio here</strong>
+                <small>or select a file from this computer</small>
+                <div class="selected-file" id="selectedFileName">No file selected</div>
+              </div>
+            </div>
+            <input class="sr-file" id="audioFile" type="file" accept=".wav,.mp3,.m4a,.mp4,.mpeg,.mpga,.webm,.ogg,.flac,.aac,.3gp,.amr,.wma,audio/*,video/mp4">
+            <div class="progress-wrap" id="uploadProgress" hidden>
+              <div class="progress-track" id="uploadProgressTrack" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress-bar" id="uploadProgressBar"></div></div>
+              <div class="progress-label" id="uploadProgressLabel">Preparing local upload…</div>
+            </div>
+            <p class="subtle">WAV, MP3, M4A, MP4 and common legacy audio. The source is hashed and retained before processing.</p>
+          </div>
+
+          <button class="button primary block" id="inspectButton" type="button">Inspect recording and estimate</button>
+
+          <div id="outcomeSection" hidden>
+            <div class="field" style="margin-top:18px">
+              <span class="field-label">2. Choose the outcome</span>
+              <div class="mode-grid" role="group" aria-label="Transcription outcome">
+                <button class="mode-card" type="button" data-mode="fast" aria-pressed="false"><strong>Fast Draft</strong><span>One cost-efficient first pass for orientation.</span></button>
+                <button class="mode-card" type="button" data-mode="sea" aria-pressed="false"><strong>SEA Multilingual</strong><span>Prefer a specialist route for code-switched speech.</span></button>
+                <button class="mode-card" type="button" data-mode="speaker" aria-pressed="false"><strong>Speaker-labelled</strong><span>Preserve provider speaker and timing evidence.</span></button>
+                <button class="mode-card" type="button" data-mode="compare" aria-pressed="true"><strong>Compare &amp; Verify</strong><span>Retain multiple candidates and review disagreement.</span></button>
+              </div>
+            </div>
+
+            <details class="field" id="advancedDetails">
+              <summary>Advanced provider details</summary>
+              <div class="advanced-body">
+                <label class="field-label" for="modelSelect">Provider and model for single-route modes</label>
+                <select id="modelSelect"></select>
+                <p class="subtle" id="providerPlan">Compare &amp; Verify uses the configured quality provider set.</p>
+              </div>
+            </details>
+
+            <div class="metrics" aria-label="Recording and budget estimate">
+              <div class="metric"><strong id="durationValue">—</strong><span>Recording duration</span></div>
+              <div class="metric"><strong id="chunkValue">—</strong><span>Planned chunks</span></div>
+              <div class="metric"><strong id="costValue">—</strong><span>Maximum approved cost</span></div>
+            </div>
+            <p class="subtle" id="estimateSummary">Choose an outcome to see its processing and cost boundary.</p>
+
+            <label class="approval">
+              <input id="confirmLive" type="checkbox">
+              <span id="approvalText">I approve this one provider run within the displayed maximum cost.</span>
+            </label>
+
+            <button class="button primary block" id="startButton" type="button" disabled>Start transcription</button>
+          </div>
+
+          <div id="message" class="notice" aria-live="polite">Choose an existing audio file to begin. No provider call occurs during inspection.</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><h2>Recent jobs</h2><p>Resume review or reopen completed work</p></div><button class="button ghost" id="refreshJobs" type="button">Refresh</button></div>
+        <div class="panel-body"><div class="recent-list" id="recentJobs"><p class="subtle">Loading local jobs…</p></div></div>
+      </section>
+    </aside>
+
+    <section class="panel workspace" aria-label="Transcription workspace">
+      <div class="workspace-empty" id="emptyWorkspace">
+        <div class="empty-inner">
+          <div class="empty-icon" aria-hidden="true">⌁</div>
+          <h2>From recording to accountable transcript</h2>
+          <p>Inspect a file, choose the outcome, then review the transcript beside its audio and provider evidence.</p>
+        </div>
+      </div>
+
+      <div class="processing-view" id="processingWorkspace" hidden>
+        <div class="processing-card">
+          <div class="spinner" aria-hidden="true"></div>
+          <h2 id="processingTitle">Processing recording</h2>
+          <p id="processingMessage">APMA is preserving the source and running the approved workflow.</p>
+          <div class="processing-steps" aria-label="Current processing stages">
+            <span class="active">Inspect</span><span>Prepare</span><span>Transcribe</span><span>Compare</span><span>Review</span>
+          </div>
+          <p class="subtle" style="margin-top:18px">Long files can take time. Completed provider artifacts are retained for safe recovery.</p>
+        </div>
+      </div>
+
+      <div class="job-content" id="jobWorkspace" hidden>
+        <div class="workspace-head">
+          <div class="workspace-title"><h2 id="jobTitle">Recording</h2><p id="jobMeta">No job loaded</p></div>
+          <span class="state-pill" id="jobState">Ready</span>
+        </div>
+        <div class="job-toolbar" id="audioToolbar" hidden><audio id="jobAudio" controls preload="metadata"></audio></div>
+        <div class="tabs" role="tablist" aria-label="Job workspace">
+          <button class="tab" id="transcriptTab" role="tab" aria-selected="true" aria-controls="transcriptPanel" type="button" data-tab="transcript">Transcript</button>
+          <button class="tab" id="reviewTab" role="tab" aria-selected="false" aria-controls="reviewPanel" type="button" data-tab="review">Review</button>
+          <button class="tab" id="minutesTab" role="tab" aria-selected="false" aria-controls="minutesPanel" type="button" data-tab="minutes">Optional minutes</button>
+          <button class="tab" id="exportsTab" role="tab" aria-selected="false" aria-controls="exportsPanel" type="button" data-tab="exports">Exports</button>
+          <button class="tab" id="evidenceTab" role="tab" aria-selected="false" aria-controls="evidencePanel" type="button" data-tab="evidence">Evidence &amp; trust</button>
+        </div>
+        <div class="tab-panel" id="transcriptPanel" role="tabpanel" aria-labelledby="transcriptTab"><div class="transcript-list" id="transcriptList"></div></div>
+        <div class="tab-panel" id="reviewPanel" role="tabpanel" aria-labelledby="reviewTab" hidden><div id="reviewContent"></div></div>
+        <div class="tab-panel" id="minutesPanel" role="tabpanel" aria-labelledby="minutesTab" hidden>
+          <div class="minutes-card">
+            <h2>Optional minutes</h2>
+            <p class="subtle">Minutes are generated from the transcript as a separate derived output. They never replace transcript evidence.</p>
+            <pre class="plain-output" id="minutesOutput">No minutes output yet.</pre>
+            <details style="margin-top:15px">
+              <summary>Generate or refresh minutes</summary>
+              <div class="advanced-body">
+                <div class="minutes-grid">
+                  <div class="field"><label class="field-label" for="minutesStyleSelect">Style</label><select id="minutesStyleSelect"></select></div>
+                  <div class="field"><label class="field-label" for="minutesModelSelect">Model</label><select id="minutesModelSelect"></select></div>
+                </div>
+                <p class="subtle" id="minutesEstimateSummary">Estimate the separate minutes cost before approval.</p>
+                <label class="approval"><input id="confirmMinutes" type="checkbox"><span>I approve this one minutes-generation run within the displayed maximum cost.</span></label>
+                <div class="button-row"><button class="button" id="estimateMinutesButton" type="button">Estimate minutes</button><button class="button primary" id="generateMinutesButton" type="button" disabled>Generate minutes</button></div>
+              </div>
+            </details>
+          </div>
+        </div>
+        <div class="tab-panel" id="exportsPanel" role="tabpanel" aria-labelledby="exportsTab" hidden><div class="export-grid" id="exportGrid"></div><div class="path-box" id="pathBox" hidden><h3>Local project folders</h3><pre class="plain-output" id="pathOutput"></pre><button class="button" id="copyPaths" type="button" style="margin-top:9px">Copy folder addresses</button></div></div>
+        <div class="tab-panel" id="evidencePanel" role="tabpanel" aria-labelledby="evidenceTab" hidden><div class="trust-grid" id="trustGrid"></div><details><summary>Technical manifest</summary><div class="advanced-body"><pre class="plain-output" id="evidenceOutput"></pre></div></details></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const state = {
+      status: null,
+      upload: null,
+      result: null,
+      mode: "compare",
+      minutesEstimate: null,
+      activeTab: "transcript"
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const elements = {
+      providerStatus: $("providerStatus"), audioFile: $("audioFile"), dropZone: $("dropZone"), selectedFileName: $("selectedFileName"),
+      uploadProgress: $("uploadProgress"), uploadProgressTrack: $("uploadProgressTrack"), uploadProgressBar: $("uploadProgressBar"), uploadProgressLabel: $("uploadProgressLabel"),
+      inspectButton: $("inspectButton"), outcomeSection: $("outcomeSection"), modelSelect: $("modelSelect"), providerPlan: $("providerPlan"),
+      durationValue: $("durationValue"), chunkValue: $("chunkValue"), costValue: $("costValue"), estimateSummary: $("estimateSummary"),
+      confirmLive: $("confirmLive"), approvalText: $("approvalText"), startButton: $("startButton"), message: $("message"),
+      recentJobs: $("recentJobs"), refreshJobs: $("refreshJobs"), emptyWorkspace: $("emptyWorkspace"), processingWorkspace: $("processingWorkspace"),
+      processingTitle: $("processingTitle"), processingMessage: $("processingMessage"), jobWorkspace: $("jobWorkspace"), jobTitle: $("jobTitle"),
+      jobMeta: $("jobMeta"), jobState: $("jobState"), audioToolbar: $("audioToolbar"), jobAudio: $("jobAudio"), transcriptList: $("transcriptList"),
+      reviewContent: $("reviewContent"), minutesOutput: $("minutesOutput"), minutesStyleSelect: $("minutesStyleSelect"), minutesModelSelect: $("minutesModelSelect"),
+      minutesEstimateSummary: $("minutesEstimateSummary"), confirmMinutes: $("confirmMinutes"), estimateMinutesButton: $("estimateMinutesButton"),
+      generateMinutesButton: $("generateMinutesButton"), exportGrid: $("exportGrid"), pathBox: $("pathBox"), pathOutput: $("pathOutput"), copyPaths: $("copyPaths"),
+      trustGrid: $("trustGrid"), evidenceOutput: $("evidenceOutput")
+    };
+
+    function money(value, exact = false) {
+      if (value === null || value === undefined || value === "" || Number.isNaN(Number(value))) return "—";
+      const amount = Number(value);
+      if (!exact && amount > 0 && amount < 0.01) return "< US$0.01";
+      return "US$" + amount.toFixed(exact ? 6 : 2);
+    }
+
+    function durationLabel(value) {
+      const seconds = Number(value);
+      if (!Number.isFinite(seconds)) return "—";
+      const hours = Math.floor(seconds / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const remainder = Math.round(seconds % 60);
+      if (hours) return `${hours}h ${minutes}m`;
+      if (minutes) return `${minutes}m ${remainder}s`;
+      return `${remainder}s`;
+    }
+
+    function timestamp(value) {
+      const total = Math.max(0, Math.round(Number(value || 0)));
+      const hours = Math.floor(total / 3600);
+      const minutes = Math.floor((total % 3600) / 60);
+      const seconds = total % 60;
+      return hours ? [hours, minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":") : [minutes, seconds].map((part) => String(part).padStart(2, "0")).join(":");
+    }
+
+    function displayState(value) {
+      return String(value || "processing").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    }
+
+    function updatedLabel(value) {
+      if (!value) return "Date unavailable";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return "Date unavailable";
+      return date.toLocaleDateString([], {month: "short", day: "numeric"});
+    }
+
+    function setMessage(text, error = false) {
+      elements.message.textContent = text;
+      elements.message.classList.toggle("error", error);
+    }
+
+    function setStep(step) {
+      document.querySelectorAll(".stepper li").forEach((item) => {
+        const itemStep = Number(item.dataset.step);
+        item.classList.toggle("active", itemStep === step);
+        item.classList.toggle("complete", itemStep < step);
+      });
+    }
+
+    function showWorkspace(view) {
+      elements.emptyWorkspace.hidden = view !== "empty";
+      elements.processingWorkspace.hidden = view !== "processing";
+      elements.jobWorkspace.hidden = view !== "job";
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, options);
+      const payload = await response.json();
+      if (!response.ok) {
+        const errors = payload.errors || [payload.error || "Request failed"];
+        const message = errors.map((item) => typeof item === "string" ? item : item.message || item.error || JSON.stringify(item)).join(" ");
+        const error = new Error(message);
+        error.payload = payload;
+        throw error;
+      }
+      return payload;
+    }
+
+    function preferredModel(mode) {
+      const models = (state.status && state.status.models) || [];
+      const runnable = models.filter((item) => item.runnable);
+      if (!runnable.length) return null;
+      if (mode === "speaker") return runnable.find((item) => item.diarization) || runnable[0];
+      if (mode === "sea") return runnable.find((item) => item.provider === "meralion") || runnable.find((item) => item.provider === "alibaba") || runnable.find((item) => item.tier_label === "Recommended Multilingual") || runnable[0];
+      if (mode === "fast") return runnable.find((item) => item.tier_label === "Economy") || runnable[0];
+      return runnable[0];
+    }
+
+    function selectMode(mode) {
+      state.mode = mode;
+      document.querySelectorAll(".mode-card").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === mode)));
+      if (mode !== "compare") {
+        const preferred = preferredModel(mode);
+        if (preferred) elements.modelSelect.value = preferred.model;
+      }
+      refreshEstimate();
+    }
+
+    function selectedEstimate() {
+      if (!state.upload || !state.upload.estimate || !state.upload.estimate.ok) return null;
+      if (state.mode === "compare") return state.upload.estimate.quality_transcription || null;
+      return state.upload.estimate.models[elements.modelSelect.value] || null;
+    }
+
+    function refreshEstimate() {
+      const estimate = state.upload && state.upload.estimate;
+      const selected = selectedEstimate();
+      if (!estimate || !selected) {
+        elements.startButton.disabled = true;
+        return;
+      }
+      const compare = state.mode === "compare";
+      const selectedStatus = (state.status.models || []).find((item) => item.model === elements.modelSelect.value);
+      const runnable = compare ? Boolean(state.status.quality_transcription && state.status.quality_transcription.runnable) : Boolean(selectedStatus && selectedStatus.runnable);
+      const chunks = selected.chunk_count || estimate.chunk_count;
+      const cap = compare ? selected.paid_provider_authorization_total_usd : selected.run_budget_cap_usd;
+      elements.durationValue.textContent = durationLabel(estimate.duration_seconds);
+      elements.chunkValue.textContent = String(chunks || "—");
+      elements.costValue.textContent = money(cap);
+      elements.approvalText.textContent = compare
+        ? "I approve this Compare & Verify run using the displayed paid-provider estimate and safety reserve, within the workspace cap."
+        : "I approve this one provider run within the displayed maximum cost.";
+      elements.providerPlan.textContent = compare
+        ? "Compare & Verify retains the configured provider candidates separately and sends uncertain regions to human review."
+        : selectedStatus
+          ? `${selectedStatus.provider_label} · ${selectedStatus.model}${selectedStatus.diarization ? " · speaker labels" : ""}`
+          : "No provider route is ready.";
+      elements.estimateSummary.textContent = compare
+        ? `Estimated provider spend ${money(selected.paid_provider_estimated_total_usd)} plus ${selected.paid_provider_cost_buffer_percent || 0}% reserve. Workspace maximum ${money(selected.workspace_cap_usd)}.`
+        : `${selected.billing_display || "Provider pricing configured"}. Estimate includes chunking and the configured safety reserve.`;
+      elements.startButton.textContent = compare ? "Start Compare & Verify" : "Start transcription";
+      elements.startButton.disabled = !runnable || !selected.within_cap;
+      if (!runnable) setMessage("This outcome is not currently ready. Open Advanced provider details or configure the required route.", true);
+      else if (!selected.within_cap) setMessage("This plan exceeds the configured workspace maximum. Choose another outcome or shorten the recording.", true);
+      else setMessage("Inspection complete. Review the outcome and maximum cost, then approve this one run.");
+    }
+
+    function uploadWithProgress(file) {
+      return new Promise((resolve, reject) => {
+        const form = new FormData();
+        form.append("audio", file);
+        const request = new XMLHttpRequest();
+        request.open("POST", "/api/upload");
+        request.upload.addEventListener("progress", (event) => {
+          if (!event.lengthComputable) return;
+          const percent = Math.round((event.loaded / event.total) * 100);
+          elements.uploadProgressBar.style.width = `${percent}%`;
+          elements.uploadProgressTrack.setAttribute("aria-valuenow", String(percent));
+          elements.uploadProgressLabel.textContent = `Uploading to the local workspace · ${percent}%`;
+        });
+        request.addEventListener("load", () => {
+          try {
+            const payload = JSON.parse(request.responseText || "{}");
+            if (request.status < 200 || request.status >= 300) throw new Error((payload.errors || [payload.error || "Upload failed"]).join(" "));
+            resolve(payload);
+          } catch (error) { reject(error); }
+        });
+        request.addEventListener("error", () => reject(new Error("The local upload was interrupted.")));
+        request.send(form);
+      });
+    }
+
+    async function inspectRecording() {
+      const file = elements.audioFile.files && elements.audioFile.files[0];
+      if (!file) { setMessage("Choose a supported audio file first.", true); return; }
+      elements.inspectButton.disabled = true;
+      elements.uploadProgress.hidden = false;
+      elements.uploadProgressBar.style.width = "0";
+      setMessage("Preserving the source locally, inspecting audio, and calculating the cost boundary.");
+      try {
+        state.upload = await uploadWithProgress(file);
+        state.result = null;
+        state.minutesEstimate = null;
+        elements.uploadProgressBar.style.width = "100%";
+        elements.uploadProgressLabel.textContent = "Local upload complete · source hash recorded";
+        elements.outcomeSection.hidden = false;
+        setStep(2);
+        const compareReady = Boolean(state.status.quality_transcription && state.status.quality_transcription.runnable);
+        selectMode(compareReady ? "compare" : preferredModel("sea") ? "sea" : preferredModel("fast") ? "fast" : "compare");
+      } catch (error) {
+        setMessage(error.message, true);
+      } finally {
+        elements.inspectButton.disabled = false;
+      }
+    }
+
+    async function startTranscription() {
+      const estimate = selectedEstimate();
+      if (!state.upload || !estimate) { setMessage("Inspect the recording first.", true); return; }
+      if (!elements.confirmLive.checked) { setMessage("Approve this one run within the displayed maximum cost before starting.", true); return; }
+      setStep(3);
+      showWorkspace("processing");
+      elements.startButton.disabled = true;
+      elements.processingTitle.textContent = state.mode === "compare" ? "Comparing provider evidence" : "Transcribing recording";
+      elements.processingMessage.textContent = "APMA is preserving provider outputs and building the reviewable record. This page remains responsive while the approved request runs.";
+      setMessage("Processing started. Completed artifacts will be retained if recovery is needed.");
+      try {
+        let payload;
+        if (state.mode === "compare") {
+          payload = await api("/api/quality/run", {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({upload_id: state.upload.upload_id, confirm_live_api: true})
+          });
+        } else {
+          payload = await api("/api/run", {
+            method: "POST", headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({upload_id: state.upload.upload_id, mode: "live_openai", model: elements.modelSelect.value, confirm_live_api: true, run_budget_cap_usd: estimate.run_budget_cap_usd, minutes_style: "standard"})
+          });
+        }
+        const jobId = payload.job_id;
+        if (!jobId) throw new Error("The run finished without a job identifier.");
+        await openJob(jobId);
+        await loadJobs();
+        setStep(4);
+        setMessage(payload.ok ? "Transcription is ready. Review the transcript and any flagged exceptions." : "The job stopped before completion. Open its evidence for recovery details.", !payload.ok);
+      } catch (error) {
+        if (error.payload && error.payload.job_id) {
+          await openJob(error.payload.job_id).catch(() => showWorkspace("empty"));
+          await loadJobs();
+        } else {
+          showWorkspace("empty");
+        }
+        setMessage(error.message, true);
+      } finally {
+        elements.confirmLive.checked = false;
+        refreshEstimate();
+      }
+    }
+
+    function renderRecentJobs(jobs) {
+      elements.recentJobs.replaceChildren();
+      if (!jobs.length) {
+        const empty = document.createElement("p"); empty.className = "subtle"; empty.textContent = "No local jobs yet."; elements.recentJobs.append(empty); return;
+      }
+      jobs.slice(0, 8).forEach((job) => {
+        const button = document.createElement("button"); button.type = "button"; button.className = "recent-job";
+        const title = document.createElement("span"); title.className = "recent-title"; title.textContent = job.title;
+        const meta = document.createElement("span"); meta.className = "recent-meta";
+        const status = document.createElement("span"); status.textContent = displayState(job.display_state);
+        const duration = document.createElement("span"); duration.textContent = durationLabel(job.duration_seconds);
+        const updated = document.createElement("span"); updated.textContent = updatedLabel(job.updated_at || job.created_at);
+        meta.append(status, duration, updated); button.append(title, meta); button.addEventListener("click", () => openJob(job.job_id)); elements.recentJobs.append(button);
+      });
+    }
+
+    async function loadJobs() {
+      try { renderRecentJobs((await api("/api/jobs?limit=12")).jobs || []); }
+      catch (error) { elements.recentJobs.textContent = "Recent jobs are unavailable."; }
+    }
+
+    function activateTab(name) {
+      state.activeTab = name;
+      document.querySelectorAll(".tab").forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.tab === name)));
+      document.querySelectorAll(".tab-panel").forEach((panel) => { panel.hidden = panel.id !== `${name}Panel`; });
+    }
+
+    function renderTranscript(result) {
+      elements.transcriptList.replaceChildren();
+      const outputs = result.outputs || {};
+      const canonical = outputs.full_transcript_json || {};
+      const segments = Array.isArray(canonical.segments) ? canonical.segments : [];
+      if (!segments.length) {
+        const plain = document.createElement("pre"); plain.className = "plain-output"; plain.textContent = outputs.full_transcript_txt || "No transcript output is available yet."; elements.transcriptList.append(plain); return;
+      }
+      segments.forEach((segment) => {
+        const article = document.createElement("article"); article.className = "segment"; article.tabIndex = 0;
+        const meta = document.createElement("div"); meta.className = "segment-meta";
+        const speaker = document.createElement("strong"); speaker.textContent = segment.speaker || "Unlabelled speaker";
+        const time = document.createElement("span"); time.textContent = segment.start_sec === null || segment.start_sec === undefined ? "Timing unavailable" : timestamp(segment.start_sec);
+        meta.append(speaker, time);
+        const text = document.createElement("p"); text.textContent = segment.text || "";
+        article.append(meta, text);
+        const seek = () => { if (result.audio_url && segment.start_sec !== null && segment.start_sec !== undefined) { elements.jobAudio.currentTime = Number(segment.start_sec); elements.jobAudio.play().catch(() => {}); } };
+        article.addEventListener("click", seek);
+        article.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); seek(); } });
+        elements.transcriptList.append(article);
+      });
+    }
+
+    function renderReview(result) {
+      elements.reviewContent.replaceChildren();
+      if (!result.review_url) {
+        const note = document.createElement("div"); note.className = "review-callout";
+        const heading = document.createElement("h2"); heading.textContent = "No exception review is attached";
+        const copy = document.createElement("p"); copy.textContent = "This single-route transcript remains a provider candidate. Use Compare & Verify when you need candidate disagreement and exact human review.";
+        note.append(heading, copy); elements.reviewContent.append(note); return;
+      }
+      const note = document.createElement("div"); note.className = "review-callout";
+      const heading = document.createElement("h2"); heading.textContent = result.review_required_count ? `${result.review_required_count} areas require human review` : "Review complete";
+      const copy = document.createElement("p"); copy.textContent = "Listen to exact clips, compare unchanged provider candidates, correct speakers, and retain every human decision.";
+      const link = document.createElement("a"); link.className = "button primary"; link.href = result.review_url; link.textContent = result.review_required_count ? "Review flagged areas" : "Open review record";
+      note.append(heading, copy, link); elements.reviewContent.append(note);
+    }
+
+    function renderExports(result) {
+      elements.exportGrid.replaceChildren();
+      const links = (result.outputs && result.outputs.transcript_exports) || {};
+      const definitions = {html: ["Transcript HTML", "Readable evidence view"], srt: ["SRT subtitles", "Timed subtitle export"], vtt: ["VTT subtitles", "Web subtitle export"]};
+      Object.entries(definitions).forEach(([format, labels]) => {
+        if (!links[format]) return;
+        const anchor = document.createElement("a"); anchor.className = "export-link"; anchor.href = links[format]; if (format === "html") { anchor.target = "_blank"; anchor.rel = "noopener"; } else anchor.download = "";
+        anchor.textContent = labels[0]; const detail = document.createElement("small"); detail.textContent = labels[1]; anchor.append(detail); elements.exportGrid.append(anchor);
+      });
+      if (!elements.exportGrid.childElementCount) { const empty = document.createElement("p"); empty.className = "subtle"; empty.textContent = "Exports will appear when the transcript is ready."; elements.exportGrid.append(empty); }
+      const paths = (result.outputs && result.outputs.project_paths) || {};
+      const lines = [["Project", paths.subproject_folder], ["Original", paths.original_folder], ["MP3", paths.mp3_folder], ["MP3 chunks", paths.mp3_chunks_folder]].filter((item) => item[1]);
+      elements.pathOutput.textContent = lines.map((item) => `${item[0]}: ${item[1]}`).join("\n"); elements.pathBox.hidden = !lines.length;
+    }
+
+    function renderTrust(result) {
+      elements.trustGrid.replaceChildren();
+      const manifest = (result.outputs && result.outputs.manifest) || {};
+      const source = manifest.source || {};
+      const items = [
+        ["Source integrity", source.sha256 ? "SHA-256 retained" : "Not yet available"],
+        ["Recording coverage", durationLabel(result.duration_seconds)],
+        ["Provider evidence", (result.provider_codes || []).join(", ") || "Single route"],
+        ["Actual provider cost", money(result.actual_cost_usd, true)],
+        ["Speaker identity", "Provider or chunk scoped"],
+        ["Human review", result.review_required_count ? `${result.review_required_count} unresolved` : result.review_url ? "Resolved" : "Not compared"]
+      ];
+      items.forEach(([label, value]) => { const box = document.createElement("div"); box.className = "trust-item"; const name = document.createElement("span"); name.textContent = label; const data = document.createElement("strong"); data.textContent = value; box.append(name, data); elements.trustGrid.append(box); });
+      elements.evidenceOutput.textContent = JSON.stringify(manifest, null, 2);
+    }
+
+    function renderJob(result) {
+      state.result = result;
+      elements.jobTitle.textContent = result.title || result.job_id;
+      elements.jobMeta.textContent = `${durationLabel(result.duration_seconds)} · ${result.job_id}`;
+      elements.jobState.textContent = displayState(result.display_state);
+      elements.jobState.className = `state-pill ${result.display_state || "processing"}`;
+      if (result.audio_url) { elements.jobAudio.src = result.audio_url; elements.audioToolbar.hidden = false; }
+      else { elements.jobAudio.removeAttribute("src"); elements.audioToolbar.hidden = true; }
+      renderTranscript(result); renderReview(result); renderExports(result); renderTrust(result);
+      elements.minutesOutput.textContent = (result.outputs && result.outputs.minutes_md) || "No minutes output yet.";
+      showWorkspace("job"); activateTab(result.display_state === "review_required" ? "review" : "transcript");
+    }
+
+    async function openJob(jobId) {
+      showWorkspace("processing");
+      elements.processingTitle.textContent = "Opening job";
+      elements.processingMessage.textContent = "Loading the transcript, audio and retained evidence.";
+      try { renderJob(await api(`/api/jobs/${encodeURIComponent(jobId)}`)); }
+      catch (error) { showWorkspace("empty"); setMessage(error.message, true); }
+    }
+
+    async function estimateMinutes() {
+      if (!state.result || !state.result.job_id) return;
+      elements.estimateMinutesButton.disabled = true;
+      try {
+        state.minutesEstimate = await api("/api/minutes/estimate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({job_id: state.result.job_id, model: elements.minutesModelSelect.value, minutes_style: elements.minutesStyleSelect.value})});
+        elements.minutesEstimateSummary.textContent = `${state.minutesEstimate.estimated_total_tokens || 0} estimated tokens · maximum ${money(state.minutesEstimate.run_budget_cap_usd)}.`;
+        elements.generateMinutesButton.disabled = !state.minutesEstimate.within_cap;
+      } catch (error) { elements.minutesEstimateSummary.textContent = error.message; elements.generateMinutesButton.disabled = true; }
+      finally { elements.estimateMinutesButton.disabled = false; }
+    }
+
+    async function generateMinutes() {
+      if (!state.result || !state.minutesEstimate || !elements.confirmMinutes.checked) { elements.minutesEstimateSummary.textContent = "Estimate and approve this one minutes run first."; return; }
+      elements.generateMinutesButton.disabled = true;
+      try {
+        await api("/api/minutes/generate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({job_id: state.result.job_id, model: elements.minutesModelSelect.value, minutes_style: elements.minutesStyleSelect.value, confirm_live_minutes: true, run_budget_cap_usd: state.minutesEstimate.run_budget_cap_usd})});
+        await openJob(state.result.job_id); activateTab("minutes");
+      } catch (error) { elements.minutesEstimateSummary.textContent = error.message; }
+      finally { elements.confirmMinutes.checked = false; }
+    }
+
+    function setSelectedFile(file) {
+      if (!file) return;
+      const supported = [".wav", ".mp3", ".m4a", ".mp4", ".mpeg", ".mpga", ".webm", ".ogg", ".flac", ".aac", ".3gp", ".amr", ".wma"];
+      if (!supported.some((extension) => file.name.toLowerCase().endsWith(extension))) { setMessage("Choose a supported audio or video-audio file.", true); return; }
+      const transfer = new DataTransfer(); transfer.items.add(file); elements.audioFile.files = transfer.files;
+      elements.selectedFileName.textContent = file.name; state.upload = null; elements.outcomeSection.hidden = true; elements.uploadProgress.hidden = true; setStep(1); setMessage("File selected. Inspect it locally before any provider run.");
+    }
+
+    async function loadStatus() {
+      state.status = await api("/api/status");
+      const runnable = state.status.models.filter((item) => item.runnable);
+      elements.providerStatus.textContent = runnable.length ? `${new Set(runnable.map((item) => item.provider)).size} provider routes ready` : "Provider setup required";
+      elements.providerStatus.classList.toggle("warn", !runnable.length);
+      elements.modelSelect.replaceChildren();
+      state.status.models.forEach((item) => { const option = document.createElement("option"); option.value = item.model; option.disabled = !item.runnable; option.textContent = `${item.provider_label} · ${item.tier_label}${item.diarization ? " · speaker labels" : ""}${item.runnable ? "" : " · setup required"}`; elements.modelSelect.append(option); });
+      if (runnable[0]) elements.modelSelect.value = runnable[0].model;
+      elements.minutesStyleSelect.replaceChildren();
+      state.status.minutes_styles.forEach((item) => { const option = document.createElement("option"); option.value = item.key; option.textContent = item.label; elements.minutesStyleSelect.append(option); });
+      elements.minutesModelSelect.replaceChildren();
+      state.status.minutes_models.forEach((item) => { const option = document.createElement("option"); option.value = item.model; option.textContent = item.label; elements.minutesModelSelect.append(option); });
+    }
+
+    document.querySelectorAll(".mode-card").forEach((button) => button.addEventListener("click", () => selectMode(button.dataset.mode)));
+    document.querySelectorAll(".tab").forEach((button) => button.addEventListener("click", () => activateTab(button.dataset.tab)));
+    elements.dropZone.addEventListener("click", () => elements.audioFile.click());
+    elements.dropZone.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); elements.audioFile.click(); } });
+    elements.dropZone.addEventListener("dragover", (event) => { event.preventDefault(); elements.dropZone.classList.add("dragging"); });
+    elements.dropZone.addEventListener("dragleave", () => elements.dropZone.classList.remove("dragging"));
+    elements.dropZone.addEventListener("drop", (event) => { event.preventDefault(); elements.dropZone.classList.remove("dragging"); setSelectedFile(event.dataTransfer.files && event.dataTransfer.files[0]); });
+    elements.audioFile.addEventListener("change", () => setSelectedFile(elements.audioFile.files && elements.audioFile.files[0]));
+    elements.inspectButton.addEventListener("click", inspectRecording);
+    elements.startButton.addEventListener("click", startTranscription);
+    elements.modelSelect.addEventListener("change", refreshEstimate);
+    elements.refreshJobs.addEventListener("click", loadJobs);
+    elements.estimateMinutesButton.addEventListener("click", estimateMinutes);
+    elements.generateMinutesButton.addEventListener("click", generateMinutes);
+    elements.minutesStyleSelect.addEventListener("change", () => { state.minutesEstimate = null; elements.generateMinutesButton.disabled = true; });
+    elements.minutesModelSelect.addEventListener("change", () => { state.minutesEstimate = null; elements.generateMinutesButton.disabled = true; });
+    elements.copyPaths.addEventListener("click", async () => { try { await navigator.clipboard.writeText(elements.pathOutput.textContent); setMessage("Local folder addresses copied."); } catch { setMessage("Copy was blocked. Select the folder text and copy it manually.", true); } });
+
+    Promise.all([loadStatus(), loadJobs()]).catch((error) => setMessage(error.message, true));
+  </script>
+</body>
+</html>

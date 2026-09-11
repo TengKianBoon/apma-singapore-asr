@@ -320,3 +320,8 @@ def test_dashboard_review_route_contract_and_environment_workspace(tmp_path, mon
     assert "/api/review/decisions" in REVIEW_HTML
     assert "Use M3ASR" not in REVIEW_HTML
     assert "`Use ${provider}`" in REVIEW_HTML
+    assert "Needs review" in REVIEW_HTML
+    assert "Next visible area" in REVIEW_HTML
+    assert 'data-filter="RED"' in REVIEW_HTML
+    assert 'data-filter="AMBER"' in REVIEW_HTML
+    assert "renderVisibleWindows" in REVIEW_HTML
