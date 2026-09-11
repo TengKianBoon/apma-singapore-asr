@@ -4,6 +4,12 @@ Status: product decision and implementation boundary for the next UI tranche.
 This document does not authorise public audio upload, production hosting, or
 live provider expenditure.
 
+Implementation snapshot (2026-09-11): the lean local tranche now includes the
+guided import/outcome/cost/review shell, upload progress, recent retained jobs,
+timestamp-linked playback, focused exception-review filters, human speaker
+labels, structured exports, and trust evidence. Durable background processing
+and multi-user features remain deferred as described below.
+
 ## Product Experience Objective
 
 APMA should feel as straightforward as a professional transcription product
@@ -16,6 +22,32 @@ The interface must not make an ordinary user understand provider codes,
 container paths, chunk policy, model versions, or reconciliation internals
 before starting. Those details remain available as evidence and advanced
 controls.
+
+## Lean Professional Boundary
+
+Professional does not mean copying the full feature inventory of an enterprise
+meeting platform. For the single-user, cost-plus-low-price product, the first
+release earns trust through a small number of polished jobs:
+
+- one obvious file-import action with real local upload progress;
+- four outcome choices expressed in user language rather than model codes;
+- a duration, chunk, cost, and approval checkpoint before any paid call;
+- a recent-job list with honest ready, review-required, processing, and failed
+  states;
+- timestamp-linked audio playback, exact exception correction, and speaker
+  relabelling without overwriting provider evidence; and
+- readable transcript, subtitle, local-project, and trust/evidence exports.
+
+The first release does **not** require a durable distributed queue, background
+workers, live collaboration, comments, CRM/calendar integrations, mobile apps,
+an unrestricted rich-text editor, or waveform rendering. Those are deferred
+until observed users cannot complete the core workflow without them or paying
+demand justifies their operating and maintenance cost.
+
+The current local implementation may remain request-bound while it clearly
+shows the active stage and preserves recoverable job artifacts. True
+leave-the-page-and-return processing is a later production-hosting requirement,
+not a claim made by this UI tranche.
 
 ## Chosen Niche And Anti-Positioning
 

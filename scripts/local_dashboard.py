@@ -124,6 +124,70 @@ def _file_response(handler: BaseHTTPRequestHandler, path: Path, spec: dict[str, 
     handler.wfile.write(body)
 
 
+def _media_response(handler: BaseHTTPRequestHandler, path: Path) -> None:
+    """Serve local job audio with one bounded HTTP byte range for seeking."""
+
+    size = path.stat().st_size
+    start = 0
+    end = max(0, size - 1)
+    status = 200
+    requested = handler.headers.get("Range", "").strip()
+    if requested:
+        unit, separator, value = requested.partition("=")
+        if unit != "bytes" or not separator or "," in value:
+            handler.send_response(416)
+            handler.send_header("Content-Range", f"bytes */{size}")
+            handler.end_headers()
+            return
+        raw_start, dash, raw_end = value.partition("-")
+        if not dash:
+            handler.send_response(416)
+            handler.send_header("Content-Range", f"bytes */{size}")
+            handler.end_headers()
+            return
+        try:
+            if raw_start:
+                start = int(raw_start)
+                end = int(raw_end) if raw_end else end
+            elif raw_end:
+                suffix = int(raw_end)
+                start = max(0, size - suffix)
+            else:
+                raise ValueError
+        except ValueError:
+            handler.send_response(416)
+            handler.send_header("Content-Range", f"bytes */{size}")
+            handler.end_headers()
+            return
+        if start < 0 or start >= size or end < start:
+            handler.send_response(416)
+            handler.send_header("Content-Range", f"bytes */{size}")
+            handler.end_headers()
+            return
+        end = min(end, size - 1)
+        status = 206
+
+    length = end - start + 1
+    handler.send_response(status)
+    handler.send_header("Content-Type", _audio_content_type(path.name))
+    handler.send_header("Content-Length", str(length))
+    handler.send_header("Accept-Ranges", "bytes")
+    handler.send_header("Content-Disposition", f'inline; filename="{_safe_filename(path.name)}"')
+    handler.send_header("X-Content-Type-Options", "nosniff")
+    if status == 206:
+        handler.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+    handler.end_headers()
+    with path.open("rb") as handle:
+        handle.seek(start)
+        remaining = length
+        while remaining:
+            block = handle.read(min(1024 * 1024, remaining))
+            if not block:
+                break
+            handler.wfile.write(block)
+            remaining -= len(block)
+
+
 def _review_workspace_from_environment(job_id: str | None = None) -> ReviewWorkspace:
     if job_id:
         safe_job_id = job_mod.validate_job_id(job_id)
@@ -169,6 +233,12 @@ def _sync_quality_review_status(job_id: str | None, view: dict) -> None:
     quality = manifest.get("quality") if isinstance(manifest.get("quality"), dict) else {}
     unresolved = int(view.get("statistics", {}).get("unresolved_windows", 0))
     quality["overall_status"] = "REVIEW_REQUIRED" if unresolved else "COMPLETE"
+    stages = quality.get("stages") if isinstance(quality.get("stages"), dict) else {}
+    review_stage = stages.get("REVIEW") if isinstance(stages.get("REVIEW"), dict) else {}
+    review_stage["unresolved_windows"] = unresolved
+    stages["REVIEW"] = review_stage
+    quality["stages"] = stages
+    manifest["quality"] = quality
     manifest["state"] = quality["overall_status"].lower()
     manifest["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     job_mod.write_manifest(job_dir, manifest)
@@ -278,6 +348,120 @@ def _job_path(job_id: str) -> Path:
     return _storage_root() / job_id
 
 
+def _job_audio_path(job_id: str) -> Path | None:
+    safe_job_id = job_mod.validate_job_id(job_id)
+    job_dir = _job_path(safe_job_id).resolve()
+    manifest = job_mod.read_manifest(job_dir)
+    audio_project = (
+        manifest.get("audio_project")
+        if isinstance(manifest.get("audio_project"), dict)
+        else {}
+    )
+    original = (
+        audio_project.get("original")
+        if isinstance(audio_project.get("original"), dict)
+        else {}
+    )
+    mp3 = audio_project.get("mp3") if isinstance(audio_project.get("mp3"), dict) else {}
+    source = manifest.get("source") if isinstance(manifest.get("source"), dict) else {}
+    for raw_path in (original.get("path"), mp3.get("path"), source.get("path")):
+        if not raw_path:
+            continue
+        candidate = Path(str(raw_path)).resolve()
+        try:
+            candidate.relative_to(job_dir)
+        except ValueError:
+            continue
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _display_job_state(raw_state: str) -> str:
+    state = str(raw_state or "queued").lower()
+    if state in {"completed", "complete"}:
+        return "ready"
+    if state == "review_required":
+        return "review_required"
+    if state == "failed":
+        return "failed"
+    if state == "cancelled":
+        return "cancelled"
+    return "processing"
+
+
+def _job_list_item(manifest: dict) -> dict:
+    source = manifest.get("source") if isinstance(manifest.get("source"), dict) else {}
+    preprocess = (
+        manifest.get("preprocess")
+        if isinstance(manifest.get("preprocess"), dict)
+        else {}
+    )
+    quality = manifest.get("quality") if isinstance(manifest.get("quality"), dict) else {}
+    stages = quality.get("stages") if isinstance(quality.get("stages"), dict) else {}
+    review_stage = stages.get("REVIEW") if isinstance(stages.get("REVIEW"), dict) else {}
+    providers = quality.get("providers") if isinstance(quality.get("providers"), dict) else {}
+    duration = preprocess.get("blob_duration_seconds", preprocess.get("duration_seconds"))
+    review_required = int(review_stage.get("unresolved_windows", 0) or 0)
+    return {
+        "job_id": str(manifest.get("job_id") or ""),
+        "title": str(source.get("original_filename") or source.get("filename") or manifest.get("job_id") or "Untitled recording"),
+        "state": str(manifest.get("state") or "queued"),
+        "display_state": _display_job_state(str(manifest.get("state") or "queued")),
+        "created_at": manifest.get("created_at"),
+        "updated_at": manifest.get("updated_at"),
+        "duration_seconds": duration,
+        "estimated_cost_usd": float(manifest.get("estimated_cost_usd", 0.0) or 0.0),
+        "actual_cost_usd": float(manifest.get("actual_cost_usd", 0.0) or 0.0),
+        "review_required_count": review_required,
+        "provider_codes": sorted(str(code) for code in providers),
+        "has_transcript": bool((manifest.get("outputs") or {}).get("full_transcript_json")),
+        "has_quality_review": bool(quality.get("review_url")),
+    }
+
+
+def list_dashboard_jobs(limit: int = 24) -> dict:
+    root = _storage_root()
+    if not root.is_dir():
+        return {"ok": True, "jobs": []}
+    items = []
+    for path in root.iterdir():
+        if not path.is_dir() or path.name.startswith("_") or path.name == UPLOADS_DIR_NAME:
+            continue
+        manifest_path = path / "job_manifest.json"
+        if not manifest_path.is_file():
+            continue
+        try:
+            manifest = job_mod.read_manifest(path)
+            item = _job_list_item(manifest)
+        except (OSError, ValueError, json.JSONDecodeError):
+            continue
+        if item["job_id"]:
+            items.append(item)
+    items.sort(
+        key=lambda item: str(item.get("updated_at") or item.get("created_at") or ""),
+        reverse=True,
+    )
+    return {"ok": True, "jobs": items[: max(1, min(int(limit), 50))]}
+
+
+def dashboard_job(job_id: str) -> dict:
+    safe_job_id = job_mod.validate_job_id(job_id)
+    job_dir = _job_path(safe_job_id)
+    manifest = job_mod.read_manifest(job_dir)
+    if not manifest:
+        raise FileNotFoundError("Job was not found")
+    item = _job_list_item(manifest)
+    outputs = collect_job_outputs(safe_job_id)
+    return {
+        "ok": item["display_state"] in {"ready", "review_required"},
+        **item,
+        "outputs": outputs,
+        "audio_url": f"/api/jobs/{safe_job_id}/audio" if _job_audio_path(safe_job_id) else None,
+        "review_url": f"/review?job_id={safe_job_id}" if item["has_quality_review"] else None,
+    }
+
+
 def estimate_job_reconciliation(job_id: str, cfg: Config | None = None) -> dict:
     """Estimate the separately approved GPT-5.6 Sol text reconciliation."""
 
@@ -364,6 +548,15 @@ def _match_transcript_export_request(path: str) -> tuple[Path, dict[str, str]] |
         return transcript_export_path(parts[2], parts[4])
     except ValueError:
         return None
+
+
+def _match_dashboard_job_request(path: str) -> tuple[str, str] | None:
+    parts = path.strip("/").split("/")
+    if len(parts) == 3 and parts[:2] == ["api", "jobs"]:
+        return unquote(parts[2]), "detail"
+    if len(parts) == 4 and parts[:2] == ["api", "jobs"] and parts[3] == "audio":
+        return unquote(parts[2]), "audio"
+    return None
 
 
 def _estimate_chunk_plan(duration_seconds: float, bytes_per_second: int, cfg: Config) -> list[dict]:
@@ -1125,7 +1318,7 @@ def run_uploaded_quality_job(upload_id: str, confirm_live_api: bool) -> dict:
     return result
 
 
-DASHBOARD_HTML = r"""<!doctype html>
+LEGACY_DASHBOARD_HTML = r"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -2088,6 +2281,11 @@ DASHBOARD_HTML = r"""<!doctype html>
 </html>"""
 
 
+# Keep the professional UI independently reviewable while the Python service owns
+# all job, cost-control, evidence, and provider behaviour.
+DASHBOARD_HTML = (REPO_ROOT / "web" / "dashboard.html").read_text(encoding="utf-8")
+
+
 class DashboardHandler(BaseHTTPRequestHandler):
     def log_message(self, format: str, *args) -> None:
         return
@@ -2107,6 +2305,14 @@ class DashboardHandler(BaseHTTPRequestHandler):
             return
         if path == "/api/health":
             _json_response(self, 200, dashboard_health())
+            return
+        if path == "/api/jobs":
+            raw_limit = (parse_qs(parsed.query).get("limit") or ["24"])[0]
+            try:
+                limit = int(raw_limit)
+            except ValueError:
+                limit = 24
+            _json_response(self, 200, list_dashboard_jobs(limit))
             return
         if path == "/api/review":
             try:
@@ -2132,6 +2338,21 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 )
             except Exception as exc:
                 _json_response(self, 400, {"error": str(exc), "errors": [str(exc)]})
+            return
+        dashboard_job_request = _match_dashboard_job_request(path)
+        if dashboard_job_request is not None:
+            requested_job_id, request_kind = dashboard_job_request
+            try:
+                if request_kind == "audio":
+                    audio_path = _job_audio_path(requested_job_id)
+                    if audio_path is None:
+                        _json_response(self, 404, {"error": "Job audio is unavailable"})
+                    else:
+                        _media_response(self, audio_path)
+                else:
+                    _json_response(self, 200, dashboard_job(requested_job_id))
+            except (FileNotFoundError, ValueError) as exc:
+                _json_response(self, 404, {"error": str(exc), "errors": [str(exc)]})
             return
         export_request = _match_transcript_export_request(path)
         if export_request is not None:

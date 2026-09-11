@@ -332,6 +332,7 @@ REVIEW_HTML = r"""<!doctype html>
     body{margin:0}header,main{width:min(1180px,calc(100% - 32px));margin:auto}header{padding:24px 0 16px}
     h1{margin:0 0 6px}.notice{padding:12px;border-left:4px solid #1f6feb;background:#eaf2fd;line-height:1.45}
     #summary{margin:14px 0;font-weight:bold}.window,#speaker-mapping{background:#fff;border:1px solid #d8e0e6;border-radius:8px;margin:14px 0;padding:16px}
+    .review-toolbar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:rgba(245,247,249,.96);padding:10px 0;border-bottom:1px solid #d8e0e6;backdrop-filter:blur(8px)}.review-toolbar button{background:#fff;color:#344054;border:1px solid #cbd5e1}.review-toolbar button[aria-pressed="true"]{background:#17202a;color:#fff;border-color:#17202a}.review-toolbar .next{margin-left:auto;background:#1f6feb;color:#fff;border-color:#1f6feb}.visible-count{font-size:13px;color:#57606a}.window:focus{outline:3px solid rgba(31,111,235,.25);outline-offset:3px}.empty-review{padding:28px;text-align:center;background:#fff;border:1px dashed #aeb8c2;border-radius:8px;margin-top:14px;color:#57606a}
     .window-head{display:flex;justify-content:space-between;gap:12px;align-items:start}.status{font-weight:bold;padding:5px 8px;border-radius:5px}
     .GREEN{background:#c6efce}.AMBER{background:#ffeb9c}.RED{background:#ffc7ce}.state{margin:12px 0;padding:10px;background:#f6f8fa;border-left:4px solid #7f8c8d}
     .candidates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.candidate{border:1px solid #d8e0e6;padding:10px;min-width:0}
@@ -340,14 +341,17 @@ REVIEW_HTML = r"""<!doctype html>
     button:disabled{background:#9aa4af;cursor:not-allowed}.reconcile{background:#fff;border:2px solid #1f6feb;border-radius:8px;margin:0 0 16px;padding:16px}.reconcile h2{margin-top:0}.cost{font-weight:bold;margin:10px 0}.approve{display:flex;gap:8px;align-items:flex-start;margin:12px 0}
     button.manual{background:#5b6570}textarea{width:100%;min-height:100px;border:1px solid #aeb8c2;border-radius:6px;padding:10px}.saved{color:#1a7f64;font-weight:bold}.error{color:#b42318;font-weight:bold}
     .mapping-row{display:grid;grid-template-columns:minmax(160px,1fr) minmax(160px,1fr) minmax(190px,1fr) auto;gap:8px;align-items:end;margin:10px 0}.mapping-row label{font-size:12px;font-weight:bold}.mapping-row input{display:block;width:100%;margin-top:4px;padding:8px;border:1px solid #aeb8c2;border-radius:5px}.scope{font-size:12px;color:#57606a;word-break:break-all}
-    @media(max-width:800px){.candidates,.mapping-row{grid-template-columns:1fr}.window-head{display:block}.status{display:inline-block;margin-top:8px}}
+    @media(max-width:800px){.candidates,.mapping-row{grid-template-columns:1fr}.window-head{display:block}.status{display:inline-block;margin-top:8px}.review-toolbar .next{margin-left:0}}
   </style>
 </head>
 <body>
   <header><h1>APMA Human Exception Review</h1><p class="notice">Listen to the exact APMA-owned clip, compare the unchanged provider candidates, then select one or enter a manual correction. If GPT-5.6 Sol assistance is used, its proposed draft is clearly labelled and never replaces the original provider evidence.</p></header>
-  <main><section id="reconciliation" class="reconcile" hidden><h2>Reduce this review with GPT-5.6 Sol</h2><p>Instead of reviewing over one thousand mismatched rows, APMA gives GPT-5.6 Sol the three transcripts for each <strong>same exact audio chunk</strong>. GPT-5.6 Sol reads text only; it does not hear the audio. It prepares a proposed draft and leaves uncertain chunks for you to hear and correct below.</p><div id="reconciliation-status">Calculating the estimate…</div><label class="approve"><input id="approve-reconciliation" type="checkbox"><span id="approve-reconciliation-label">I approve this one GPT-5.6 Sol run using the exact displayed estimate plus 15% reserve.</span></label><button id="run-reconciliation" disabled>Run GPT-5.6 Sol assisted comparison</button></section><div id="summary">Loading review windows…</div><div id="message" aria-live="polite"></div><section id="speaker-mapping" hidden><h2>Human speaker labels</h2><p>Enter a meeting label only when you know it. APMA always keeps the original provider ID in brackets. A meeting speaker ID may be reused manually across separately scoped runs; APMA does not infer that match.</p><div id="speaker-mapping-rows"></div></section><div id="windows"></div></main>
+  <main><section id="reconciliation" class="reconcile" hidden><h2>Reduce this review with GPT-5.6 Sol</h2><p>Instead of reviewing over one thousand mismatched rows, APMA gives GPT-5.6 Sol the three transcripts for each <strong>same exact audio chunk</strong>. GPT-5.6 Sol reads text only; it does not hear the audio. It prepares a proposed draft and leaves uncertain chunks for you to hear and correct below.</p><div id="reconciliation-status">Calculating the estimate…</div><label class="approve"><input id="approve-reconciliation" type="checkbox"><span id="approve-reconciliation-label">I approve this one GPT-5.6 Sol run using the exact displayed estimate plus 15% reserve.</span></label><button id="run-reconciliation" disabled>Run GPT-5.6 Sol assisted comparison</button></section><div id="summary">Loading review windows…</div><div id="message" aria-live="polite"></div><nav class="review-toolbar" aria-label="Review filters"><button type="button" data-filter="unresolved" aria-pressed="true">Needs review</button><button type="button" data-filter="RED" aria-pressed="false">Red</button><button type="button" data-filter="AMBER" aria-pressed="false">Amber</button><button type="button" data-filter="resolved" aria-pressed="false">Resolved</button><button type="button" data-filter="all" aria-pressed="false">All</button><span class="visible-count" id="visible-count"></span><button class="next" id="next-window" type="button">Next visible area</button></nav><section id="speaker-mapping" hidden><h2>Human speaker labels</h2><p>Enter a meeting label only when you know it. APMA always keeps the original provider ID in brackets. A meeting speaker ID may be reused manually across separately scoped runs; APMA does not infer that match.</p><div id="speaker-mapping-rows"></div></section><div id="windows"></div></main>
   <script>
     let providers = [];
+    let reviewPayload = null;
+    let activeFilter = "unresolved";
+    let nextVisibleIndex = -1;
     const windowsBox = document.getElementById("windows");
     const summary = document.getElementById("summary");
     const message = document.getElementById("message");
@@ -357,6 +361,8 @@ REVIEW_HTML = r"""<!doctype html>
     const reconciliationStatus = document.getElementById("reconciliation-status");
     const approveReconciliation = document.getElementById("approve-reconciliation");
     const runReconciliationButton = document.getElementById("run-reconciliation");
+    const visibleCount = document.getElementById("visible-count");
+    const nextWindowButton = document.getElementById("next-window");
     const jobId = new URLSearchParams(window.location.search).get("job_id");
     const reviewQuery = jobId ? `?job_id=${encodeURIComponent(jobId)}` : "";
     let reconciliationEstimate = null;
@@ -502,6 +508,8 @@ REVIEW_HTML = r"""<!doctype html>
     function renderWindow(window) {
       const card = document.createElement("article");
       card.className = "window";
+      card.id = `window-${window.window_id}`;
+      card.tabIndex = -1;
       const head = document.createElement("div");
       head.className = "window-head";
       head.append(textElement("h2", `${window.window_id} — ${timeLabel(window.global_start_sec)} to ${timeLabel(window.global_end_sec)}`));
@@ -569,6 +577,26 @@ REVIEW_HTML = r"""<!doctype html>
       return card;
     }
 
+    function matchesFilter(window) {
+      if (activeFilter === "all") return true;
+      if (activeFilter === "unresolved") return Boolean(window.review_required);
+      if (activeFilter === "resolved") return !window.review_required;
+      return window.derived_status === activeFilter;
+    }
+
+    function renderVisibleWindows() {
+      if (!reviewPayload) return;
+      const visible = reviewPayload.windows.filter(matchesFilter);
+      nextVisibleIndex = -1;
+      visibleCount.textContent = `${visible.length} shown`;
+      nextWindowButton.disabled = visible.length === 0;
+      if (!visible.length) {
+        windowsBox.replaceChildren(textElement("div", "No areas match this filter.", "empty-review"));
+        return;
+      }
+      windowsBox.replaceChildren(...visible.map(renderWindow));
+    }
+
     async function loadReview() {
       try {
         const payload = await api("/api/review" + reviewQuery);
@@ -576,8 +604,9 @@ REVIEW_HTML = r"""<!doctype html>
           ? payload.provider_order
           : ["M3ASR", "gptTr", "Gem35T"];
         summary.textContent = `${payload.statistics.total_windows} windows — ${payload.statistics.resolved_windows} resolved, ${payload.statistics.unresolved_windows} still requiring review`;
+        reviewPayload = payload;
         renderSpeakerMappings(payload);
-        windowsBox.replaceChildren(...payload.windows.map(renderWindow));
+        renderVisibleWindows();
       } catch (error) {
         message.textContent = error.message;
         message.className = "error";
@@ -587,6 +616,18 @@ REVIEW_HTML = r"""<!doctype html>
       runReconciliationButton.disabled = !reconciliationEstimate || !reconciliationEstimate.within_cap || !approveReconciliation.checked;
     });
     runReconciliationButton.addEventListener("click", runReconciliation);
+    document.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
+      activeFilter = button.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      renderVisibleWindows();
+    }));
+    nextWindowButton.addEventListener("click", () => {
+      const cards = Array.from(windowsBox.querySelectorAll(".window"));
+      if (!cards.length) return;
+      nextVisibleIndex = (nextVisibleIndex + 1) % cards.length;
+      cards[nextVisibleIndex].scrollIntoView({behavior:"smooth", block:"start"});
+      cards[nextVisibleIndex].focus({preventScroll:true});
+    });
     loadReconciliationEstimate();
     loadReview();
   </script>
