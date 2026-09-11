@@ -61,6 +61,49 @@ APMA should therefore be described as evidence toward Builder-level product
 orchestration and selected Catalyst behaviours, not as proof that its owner or
 organisation is AIRI Level 4.
 
+## AIRI Is Not A Technical Role Ladder
+
+AIRI is intentionally broad. The current personal framework covers mindset,
+ethics and responsibility, value creation, data literacy, and tools and
+technical skills. Its technical pillar includes tool/agent proficiency,
+specification thinking, and AI-assisted creation/orchestration; it is not a
+substitute for an engineering interview, architecture review, production
+record, or job-level assessment.
+
+An AIRI level therefore must not be translated directly into `senior FDE`,
+`staff solutions architect`, or another role grade. Two people can have similar
+AI readiness and very different depth in distributed systems, cloud/security
+architecture, integration engineering, ML evaluation, incident response,
+customer delivery, or commercial responsibility.
+
+Use AIRI as the horizontal readiness and governance view. Add separate vertical
+evidence overlays for the roles being demonstrated:
+
+| Evidence area | Forward Deployed Engineer emphasis | Solutions Architect emphasis | APMA evidence still needed |
+| --- | --- | --- | --- |
+| Problem discovery | Work inside an ambiguous user workflow and turn pain into shipped increments | Discover business, technical, data, security, and non-functional requirements | Recorded design-partner discovery and before/after workflow baseline |
+| Hands-on delivery | Build adapters, integrations, transformations, tests, deployment, and fixes | Produce reference architecture, interfaces, deployment patterns, and decision records | One real customer-environment integration beyond a controlled developer machine |
+| Architecture | Make pragmatic implementation trade-offs under field constraints | Own end-to-end target architecture, alternatives, risk, cost, reliability, and migration path | Hosted target design plus load, failure, data-flow, and cost evidence |
+| Production operation | Debug actual data and failures, shorten feedback cycles, and restore service | Define observability, resilience, identity, support, recovery, and operating model | Authenticated pilot, monitored runs, incident exercise, and recovery proof |
+| Adoption | Train users, observe friction, iterate rapidly, and achieve repeated use | Align technical and executive stakeholders and remove adoption blockers | Completion, repeat use, review-effort saving, training, and satisfaction evidence |
+| Commercial outcome | Connect delivered changes to customer value and expansion | Shape a viable solution, cost model, scope, and risk boundary | Willingness to pay, support cost, gross margin, renewal, or expansion evidence |
+| Trust and governance | Implement guardrails in the working product and field process | Design policy, control ownership, assurance, data residency, and risk acceptance | Threat model, retention/deletion proof, independent review, and recurring governance cycle |
+
+Current APMA is strongest as Solutions Architect and AI-product evidence:
+provider-neutral architecture, explicit boundaries, cost/risk controls,
+evaluation design, and transparent trade-offs. It has meaningful FDE-style
+building evidence through adapters, guarded live routes, tests, recovery, and
+rapid provider corrections, but it should not be presented as senior field
+deployment proof until external users, customer environments, production
+incidents, adoption, and commercial outcomes exist.
+
+Portfolio statements should therefore be specific:
+
+> APMA provides evidence of AI solution architecture, responsible product
+> orchestration, and selected forward-deployed engineering behaviours. AIRI is
+> used as a complementary readiness and governance lens; role seniority is
+> demonstrated separately through technical artifacts and deployment outcomes.
+
 References:
 
 - [AI Singapore AIRI](https://aisingapore.org/innovation/airi/)

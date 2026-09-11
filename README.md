@@ -1,8 +1,9 @@
 # APMA — Singapore Multilingual ASR Showcase
 
-An auditable, safety-first workflow for turning multilingual audio into
-provider-attributed transcripts, reviewable evidence, meeting minutes, and
-portable exports.
+An auditable, safety-first workflow for turning existing multilingual audio
+files into provider-attributed transcripts, reviewable evidence, optional
+minutes, and portable exports. APMA is file-based and asynchronous; it is not a
+real-time meeting assistant.
 
 [![CI](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml)
 
@@ -41,7 +42,7 @@ runs are opt-in; development and CI remain dry-run by default.
 
 The defensible portfolio claim is therefore not "perfect Hokkien ASR." It is a
 governed, reviewable method for turning uneven local-language model capability
-into useful Singapore meeting records.
+into useful Southeast Asian recorded-conversation evidence.
 
 ## What You Can Inspect
 
@@ -88,7 +89,9 @@ This acknowledgement does not imply endorsement of APMA by MERaLiON or A*STAR.
 
 ## Phase 1 Goal
 
-Upload audio file → chunk if needed → transcribe → generate minutes → export outputs.
+Inspect an existing audio file → chunk safely → transcribe in batch → compare
+and review exceptions → export accountable outputs. Generate minutes only when
+they are useful as a separate derived step.
 
 ## Safety Rules
 

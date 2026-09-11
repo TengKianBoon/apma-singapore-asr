@@ -1,8 +1,10 @@
 # APMA Showcase Walkthrough
 
-APMA demonstrates how a single-user audio assistant can turn long,
-code-switched Singapore conversations into reviewable records while keeping
-provider evidence, cost, provenance, and human judgment separate.
+APMA demonstrates how a single-user transcription-assurance workspace can turn
+existing, long, code-switched Southeast Asian recordings into reviewable
+records while keeping provider evidence, cost, provenance, and human judgment
+separate. It processes files asynchronously; it is not a real-time meeting
+assistant.
 
 ![APMA dashboard using synthetic configuration](assets/apma-dashboard-synthetic.png)
 
@@ -27,7 +29,7 @@ model; it contributes the governed end-to-end system around those models.
 
 ```mermaid
 flowchart LR
-    A[Audio upload] --> B[Hash and structural QC]
+    A[Existing audio file] --> B[Hash and structural QC]
     B --> C[Normalize and chunk]
     C --> D{Explicit provider and budget gate}
     D --> E[OpenAI]

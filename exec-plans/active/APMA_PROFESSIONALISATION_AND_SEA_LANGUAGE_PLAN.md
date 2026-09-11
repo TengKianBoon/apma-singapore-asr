@@ -16,13 +16,23 @@ The first release is a public-safe, synthetic-data showcase. A separate,
 invite-only processing pilot follows only after hosted security and operating
 controls pass their own gate.
 
+The detailed screen flow, competitive workflow decisions, and UI acceptance
+criteria are defined in
+[`APMA_PROFESSIONAL_UI_FLOW.md`](../../product-specs/APMA_PROFESSIONAL_UI_FLOW.md).
+
 ## Strategic Position
 
-APMA should not try to out-build general meeting assistants on calendar bots,
-real-time note-taking, CRM integrations, or cross-meeting chat. Its defensible
-wedge is governed review of speech that changes among languages and dialects,
-especially where a fluent-looking transcript can conceal omissions, wrong
-language assumptions, speaker errors, or model disagreement.
+APMA's chosen category is **Southeast Asia multilingual transcription
+assurance for existing audio files**. It processes long or legacy recordings
+asynchronously and helps people review model evidence after recording. It
+should not try to out-build general meeting assistants on live capture,
+calendar bots, real-time note-taking, CRM integrations, or cross-meeting chat.
+
+Its defensible wedge is governed review of speech that changes among languages
+and dialects, especially where a fluent-looking transcript can conceal
+omissions, wrong language assumptions, speaker errors, or model disagreement.
+Useful market-leader patterns may be adopted for import, progress, playback,
+editing, and export, but APMA does not inherit the meeting-assistant category.
 
 The primary early buyer is not necessarily an individual seeking inexpensive
 transcription. Better initial users are:
@@ -62,9 +72,9 @@ claiming to transcribe every regional language.
 6. **Preserve code-switching.** English remains English. Chinese-script
    normalisation or translation is a separate, traceable view and never alters
    the retained source candidate.
-7. **Public means synthetic or licensed.** No private meeting audio, transcript,
-   credential, customer name, or confidential 61JK material enters the public
-   repository or showcase.
+7. **Public means synthetic or licensed.** No private recording, transcript,
+   credential, customer name, or confidential family or customer material
+   enters the public repository or showcase.
 8. **Dry-run and cost limits remain defaults.** Every future billable route keeps
    preflight estimation, a job cap, exact approval, and retained usage evidence.
 
