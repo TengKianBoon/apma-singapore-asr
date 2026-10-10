@@ -25,6 +25,11 @@ from services.integrity import sha256_file
 from services.speaker_overlay import SpeakerMappingStore
 from services.minutes.openai_adapter import LiveOpenAIMinutesGenerator, estimate_minutes_cost, minutes_model_options
 from services.minutes.presets import list_minutes_style_presets, normalize_minutes_style
+from services.pilot_evidence import (
+    build_pilot_summary,
+    load_pilot_evidence,
+    record_pilot_evidence,
+)
 from services.preprocess import probe_audio_metadata
 from services.quality_reconciliation import estimate_reconciliation, run_reconciliation
 from services.quality_workflow import run_quality_workflow
@@ -453,12 +458,45 @@ def dashboard_job(job_id: str) -> dict:
         raise FileNotFoundError("Job was not found")
     item = _job_list_item(manifest)
     outputs = collect_job_outputs(safe_job_id)
+    try:
+        pilot_evidence = load_pilot_evidence(job_dir)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        pilot_evidence = {
+            "recorded": False,
+            "integrity": {"ok": False},
+            "error": f"Pilot evidence could not be verified: {exc}",
+        }
     return {
         "ok": item["display_state"] in {"ready", "review_required"},
         **item,
         "outputs": outputs,
+        "pilot_evidence": pilot_evidence,
         "audio_url": f"/api/jobs/{safe_job_id}/audio" if _job_audio_path(safe_job_id) else None,
         "review_url": f"/review?job_id={safe_job_id}" if item["has_quality_review"] else None,
+    }
+
+
+def save_dashboard_pilot_evidence(job_id: str, payload: dict) -> dict:
+    safe_job_id = job_mod.validate_job_id(job_id)
+    job_dir = _job_path(safe_job_id)
+    if not (job_dir / "job_manifest.json").is_file():
+        raise FileNotFoundError("Job was not found")
+    evidence = record_pilot_evidence(job_dir, payload)
+    cohort_code = evidence["pilot_outcome"]["cohort_code"]
+    return {
+        "ok": True,
+        "job_id": safe_job_id,
+        "pilot_evidence": load_pilot_evidence(job_dir),
+        "pilot_summary": build_pilot_summary(
+            _storage_root(), cohort_code=cohort_code
+        ),
+    }
+
+
+def dashboard_pilot_summary(cohort_code: str | None = None) -> dict:
+    return {
+        "ok": True,
+        **build_pilot_summary(_storage_root(), cohort_code=cohort_code),
     }
 
 
@@ -2314,6 +2352,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 limit = 24
             _json_response(self, 200, list_dashboard_jobs(limit))
             return
+        if path == "/api/pilot/summary":
+            cohort_code = (parse_qs(parsed.query).get("cohort_code") or [None])[0]
+            try:
+                _json_response(self, 200, dashboard_pilot_summary(cohort_code))
+            except Exception as exc:
+                _json_response(self, 400, {"error": str(exc), "errors": [str(exc)]})
+            return
         if path == "/api/review":
             try:
                 _json_response(self, 200, _review_payload(job_id))
@@ -2371,6 +2416,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
         try:
             if path == "/api/upload":
                 payload = save_uploaded_audio(self.headers.get("Content-Type", ""), body)
+                _json_response(self, 200, payload)
+                return
+            if path == "/api/pilot/evidence":
+                data = json.loads(body.decode("utf-8"))
+                job_id = str(data.pop("job_id", query_job_id or ""))
+                payload = save_dashboard_pilot_evidence(job_id, data)
                 _json_response(self, 200, payload)
                 return
             if path == "/api/review/decisions":

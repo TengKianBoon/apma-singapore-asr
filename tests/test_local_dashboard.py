@@ -898,7 +898,96 @@ def test_professional_dashboard_exposes_a_lean_user_flow():
     assert 'role="tablist"' in html
     assert "jobAudio.currentTime" in html
     assert "Optional minutes" in html
+    assert "Pilot outcome" in html
+    assert "/api/pilot/evidence" in html
+    assert "/api/pilot/summary" in html
     assert "APMA Local Dashboard" not in html
+
+
+def test_dashboard_records_and_aggregates_privacy_minimised_pilot_evidence(
+    tmp_path, monkeypatch
+):
+    storage = tmp_path / "jobs"
+    monkeypatch.setattr(local_dashboard, "STORAGE_PATH", storage)
+    job_id = "job-pilot-flow"
+    job_dir = storage / job_id
+    outputs_dir = job_dir / "outputs"
+    outputs_dir.mkdir(parents=True)
+    transcript_json = outputs_dir / "full_transcript.json"
+    transcript_json.write_text(
+        json.dumps(
+            {
+                "segments": [
+                    {"segment_id": "s1", "text": "private transcript text"},
+                    {"segment_id": "s2", "text": "more private transcript text"},
+                ],
+                "correction_history": [{"correction_id": "c1"}],
+            }
+        ),
+        encoding="utf-8",
+    )
+    manifest = {
+        "job_id": job_id,
+        "state": "complete",
+        "source": {"sha256": "source-sha"},
+        "preprocess": {"duration_seconds": 1800.0},
+        "outputs": {"full_transcript_json": str(transcript_json)},
+        "actual_cost_usd": 0.25,
+    }
+    (job_dir / "job_manifest.json").write_text(
+        json.dumps(manifest), encoding="utf-8"
+    )
+    payload = {
+        "cohort_code": "SG-PILOT-01",
+        "participant_code": "P001",
+        "data_classification": "consented_private",
+        "use_case": "research_interview",
+        "language_mix": ["hokkien", "singlish"],
+        "task_status": "completed",
+        "consent_record_id": "CR-001",
+        "purpose_notice_confirmed": True,
+        "consent_confirmed": True,
+        "provider_processing_disclosed": True,
+        "withdrawal_route_disclosed": True,
+        "retention_review_due_on": "2026-12-31",
+        "public_excerpt_authorized": False,
+        "review_minutes": 10,
+        "delivery_labor_cost_usd": 3,
+        "support_cost_usd": 1,
+        "price_charged_usd": 6,
+        "trust_before": 2,
+        "trust_after": 4,
+        "confidence_to_share": 4,
+        "transcript_usable": True,
+        "would_use_again": True,
+        "primary_blocker": "none",
+        "reference_evaluation": {
+            "dialect_units_total": 10,
+            "dialect_units_correct": 8,
+            "meaning_units_total": 20,
+            "meaning_units_correct": 18,
+            "critical_terms_total": 5,
+            "critical_terms_correct": 5,
+            "speaker_turns_total": 10,
+            "speaker_attribution_errors": 1,
+            "unsupported_content_events": 0,
+            "omission_events": 1,
+        },
+    }
+
+    saved = local_dashboard.save_dashboard_pilot_evidence(job_id, payload)
+    detail = local_dashboard.dashboard_job(job_id)
+    summary = local_dashboard.dashboard_pilot_summary("SG-PILOT-01")
+    serialized_summary = json.dumps(summary)
+
+    assert saved["ok"] is True
+    assert detail["pilot_evidence"]["recorded"] is True
+    assert summary["sample"]["eligible_jobs"] == 1
+    assert summary["accuracy"]["dialect_reference_accuracy_percent"] == 80.0
+    assert summary["correction_effort"]["corrections_per_100_segments"] == 50.0
+    assert "P001" not in serialized_summary
+    assert "CR-001" not in serialized_summary
+    assert "private transcript text" not in serialized_summary
 
 
 def test_dashboard_lists_and_reopens_retained_jobs(tmp_path, monkeypatch):

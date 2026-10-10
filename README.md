@@ -1,11 +1,11 @@
-# APMA — Singapore Multilingual ASR Showcase
+# APMA V5 Transcription Assurance MVP
 
 An auditable, safety-first workflow for turning existing multilingual audio
 files into provider-attributed transcripts, reviewable evidence, optional
 minutes, and portable exports. APMA is file-based and asynchronous; it is not a
 real-time meeting assistant.
 
-[![CI](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml)
+[![CI](https://github.com/TengKianBoon/APMA_V5_Audio_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/APMA_V5_Audio_MVP/actions/workflows/ci.yml)
 
 ![APMA professional dashboard using a synthetic legacy-audio fixture](docs/assets/apma-dashboard-synthetic.png)
 
@@ -60,6 +60,10 @@ into useful Southeast Asian recorded-conversation evidence.
   non-private audio for MERaLiON and Qwen Filetrans.
 - Browser-tested synthetic import, upload progress, outcome routing, cost
   preflight, provider disclosure, and responsive layout, with no paid call.
+- A consent-gated Pilot outcome workflow that derives correction, duration and
+  provider-cost evidence; records bounded accuracy, adoption, unit-economics
+  and trust inputs; and exports aggregates without transcript text or direct
+  participant identifiers.
 
 Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [architecture](ARCHITECTURE.md) and
@@ -69,22 +73,10 @@ maps the work to product decisions, governance, security, trust, adoption, and
 measurable value without claiming an AIRI certification.
 The [solution architecture and FDE evidence map](docs/SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md)
 links role claims to inspectable artifacts, browser QA, and explicit gaps.
+The [consented pilot runbook](docs/CONSENTED_PILOT_RUNBOOK.md) defines the
+operating sequence, metric denominators, governance gates, and claim boundary.
 Public releases must follow the
 [clean-history release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md).
-
-## My contribution
-
-I identified an underserved local-language problem, established the product
-and evidence boundaries, selected and re-evaluated providers as their
-capabilities changed, directed implementation, enforced privacy and cost
-controls, and validated bounded live routes using non-private audio. AI agents
-accelerated implementation; I retained responsibility for product direction,
-risk acceptance, commercial priorities, and release decisions.
-
-The maturity claim is deliberately bounded: this is evidence of hands-on AI
-product orchestration and responsible-AI controls while building toward
-AIRI Level 4-aligned AI Catalyst capability. It is a self-assessment, not an
-AIRI certification.
 
 ## Singapore model acknowledgement
 
@@ -129,6 +121,8 @@ For the browser-based local dashboard, including upload, budget locks, supported
 For current bounded MERaLiON and Qwen evidence, see
 `docs/LIVE_PROVIDER_VERIFICATION_2026-09-11.md`. For provider decisions,
 benchmark criteria, and provenance, see `docs/TRANSCRIPTION_ARCHITECTURE_4OFX.md`.
+For the privacy-minimised external-pilot evidence loop, see
+`docs/CONSENTED_PILOT_RUNBOOK.md`.
 
 ## Docker Quickstart (dry-run)
 
@@ -234,6 +228,9 @@ Selecting a transcription engine:
 - OpenAI adapter is opt-in and protected by DRY_RUN + explicit enable flags and cost/file-size preflight; do not enable in CI.
 
 Architecture status: [APMA 4ofX Transcription Architecture Status](docs/TRANSCRIPTION_ARCHITECTURE_4OFX.md)
+
+
+
 Example output (dry-run verification):
 
 ```

@@ -180,7 +180,7 @@
     details { border-top: 1px solid var(--soft-line); padding-top: 11px; }
     summary { color: var(--navy); cursor: pointer; font-size: 12px; font-weight: 800; }
     .advanced-body { padding-top: 12px; }
-    select, input[type="text"] {
+    select, input[type="text"], input[type="number"], input[type="date"] {
       width: 100%;
       min-height: 42px;
       border: 1px solid #bdc9d5;
@@ -303,6 +303,18 @@
     .minutes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .path-box { margin-top: 16px; }
     .path-box pre { min-height: 0; max-height: 180px; }
+    .pilot-card { max-width: 820px; }
+    .pilot-card > p { color: var(--muted); font-size: 12px; }
+    .pilot-section { margin-top: 14px; border: 1px solid var(--soft-line); border-radius: 11px; padding: 0 14px 14px; }
+    .pilot-section summary { padding: 13px 0 0; border: 0; }
+    .pilot-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 13px; }
+    .pilot-grid .field { margin-bottom: 4px; }
+    .pilot-grid .wide { grid-column: 1 / -1; }
+    .pilot-checks { display: grid; gap: 9px; margin-top: 13px; }
+    .pilot-checks label { display: flex; align-items: flex-start; gap: 9px; color: #2f4056; font-size: 12px; line-height: 1.45; }
+    .pilot-checks input { width: 17px; height: 17px; margin-top: 1px; flex: 0 0 auto; }
+    .pilot-result { margin: 14px 0; padding: 13px; border-radius: 10px; background: var(--teal-soft); color: #20564f; font-size: 12px; line-height: 1.5; }
+    .pilot-summary { min-height: 0; max-height: 300px; margin-top: 12px; }
     .subtle { color: var(--muted); font-size: 11px; line-height: 1.5; }
     @media (max-width: 980px) {
       .app-shell { grid-template-columns: 1fr; }
@@ -316,7 +328,8 @@
       .status-pill { padding: 6px 8px; }
       .app-shell { margin-top: 10px; }
       .rail { grid-template-columns: 1fr; }
-      .mode-grid, .metrics, .minutes-grid { grid-template-columns: 1fr; }
+      .mode-grid, .metrics, .minutes-grid, .pilot-grid { grid-template-columns: 1fr; }
+      .pilot-grid .wide { grid-column: auto; }
       .segment { grid-template-columns: 1fr; gap: 7px; }
       .processing-steps { grid-template-columns: 1fr; text-align: left; }
       .workspace-head { flex-direction: column; }
@@ -448,6 +461,7 @@
           <button class="tab" id="minutesTab" role="tab" aria-selected="false" aria-controls="minutesPanel" type="button" data-tab="minutes">Optional minutes</button>
           <button class="tab" id="exportsTab" role="tab" aria-selected="false" aria-controls="exportsPanel" type="button" data-tab="exports">Exports</button>
           <button class="tab" id="evidenceTab" role="tab" aria-selected="false" aria-controls="evidencePanel" type="button" data-tab="evidence">Evidence &amp; trust</button>
+          <button class="tab" id="pilotTab" role="tab" aria-selected="false" aria-controls="pilotPanel" type="button" data-tab="pilot">Pilot outcome</button>
         </div>
         <div class="tab-panel" id="transcriptPanel" role="tabpanel" aria-labelledby="transcriptTab"><div class="transcript-list" id="transcriptList"></div></div>
         <div class="tab-panel" id="reviewPanel" role="tabpanel" aria-labelledby="reviewTab" hidden><div id="reviewContent"></div></div>
@@ -472,6 +486,78 @@
         </div>
         <div class="tab-panel" id="exportsPanel" role="tabpanel" aria-labelledby="exportsTab" hidden><div class="export-grid" id="exportGrid"></div><div class="path-box" id="pathBox" hidden><h3>Local project folders</h3><pre class="plain-output" id="pathOutput"></pre><button class="button" id="copyPaths" type="button" style="margin-top:9px">Copy folder addresses</button></div></div>
         <div class="tab-panel" id="evidencePanel" role="tabpanel" aria-labelledby="evidenceTab" hidden><div class="trust-grid" id="trustGrid"></div><details><summary>Technical manifest</summary><div class="advanced-body"><pre class="plain-output" id="evidenceOutput"></pre></div></details></div>
+        <div class="tab-panel" id="pilotPanel" role="tabpanel" aria-labelledby="pilotTab" hidden>
+          <div class="pilot-card">
+            <h2>Consented pilot outcome</h2>
+            <p>Record structured outcome evidence after review. Use pseudonymous codes only—no names, contact details, notes, transcript text, or audio are copied into the pilot dataset.</p>
+            <div class="pilot-result" id="pilotResult">No pilot outcome has been recorded for this job.</div>
+
+            <details class="pilot-section" open>
+              <summary>Pilot identity and governance</summary>
+              <div class="pilot-grid">
+                <div class="field"><label for="pilotCohort">Cohort code</label><input id="pilotCohort" type="text" value="SG-HOK-01" maxlength="64"></div>
+                <div class="field"><label for="pilotParticipant">Pseudonymous participant code</label><input id="pilotParticipant" type="text" placeholder="P001" maxlength="64"></div>
+                <div class="field"><label for="pilotClassification">Data classification</label><select id="pilotClassification"><option value="synthetic">Synthetic QA — excluded from pilot outcomes</option><option value="consented_private">Consented private pilot recording</option></select></div>
+                <div class="field"><label for="pilotUseCase">Use case</label><select id="pilotUseCase"><option value="research_interview">Research interview</option><option value="oral_history">Oral history</option><option value="internal_meeting">Internal meeting</option><option value="family_history">Family history</option><option value="service_evaluation">Service evaluation</option><option value="other_evaluation">Other evaluation</option></select></div>
+                <div class="field wide"><label for="pilotLanguages">Language codes, comma-separated</label><input id="pilotLanguages" type="text" value="hokkien, singlish, mandarin" placeholder="hokkien, singlish, mandarin"></div>
+                <div class="field"><label for="pilotTaskStatus">Workflow result</label><select id="pilotTaskStatus"><option value="completed">Completed</option><option value="abandoned">Abandoned</option><option value="failed">Failed</option></select></div>
+                <div class="field"><label for="pilotRetentionDue">Retention review due</label><input class="consent-control" id="pilotRetentionDue" type="date"></div>
+                <div class="field wide"><label for="pilotConsentRecord">External consent record ID</label><input class="consent-control" id="pilotConsentRecord" type="text" placeholder="CR-001" maxlength="64"></div>
+              </div>
+              <div class="pilot-checks" id="pilotConsentChecks">
+                <label><input class="consent-control" id="pilotPurposeNotice" type="checkbox"><span>The participant received the purpose notice before collection or use.</span></label>
+                <label><input class="consent-control" id="pilotConsent" type="checkbox"><span>Consent or another reviewed and documented basis is recorded outside APMA.</span></label>
+                <label><input class="consent-control" id="pilotProviderDisclosure" type="checkbox"><span>Use of configured external transcription providers was disclosed.</span></label>
+                <label><input class="consent-control" id="pilotWithdrawal" type="checkbox"><span>A withdrawal and deletion-request route was explained.</span></label>
+                <label><input id="pilotPublicExcerpt" type="checkbox"><span>Separate public excerpt use was explicitly authorised. APMA still exports no excerpt here.</span></label>
+              </div>
+            </details>
+
+            <details class="pilot-section">
+              <summary>Review effort and unit economics</summary>
+              <div class="pilot-grid">
+                <div class="field"><label for="pilotReviewMinutes">Human review minutes</label><input id="pilotReviewMinutes" type="number" min="0" step="0.1" value="0"></div>
+                <div class="field"><label for="pilotLaborCost">Delivery labour cost (USD)</label><input id="pilotLaborCost" type="number" min="0" step="0.01" value="0"></div>
+                <div class="field"><label for="pilotSupportCost">Support cost (USD)</label><input id="pilotSupportCost" type="number" min="0" step="0.01" value="0"></div>
+                <div class="field"><label for="pilotPrice">Price charged (USD)</label><input id="pilotPrice" type="number" min="0" step="0.01" value="0"></div>
+              </div>
+              <p class="subtle">Recording duration, provider cost, segment count and correction count are taken from retained APMA evidence.</p>
+            </details>
+
+            <details class="pilot-section">
+              <summary>Reference accuracy counts</summary>
+              <div class="pilot-grid">
+                <div class="field"><label for="pilotDialectTotal">Dialect units checked</label><input id="pilotDialectTotal" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotDialectCorrect">Dialect units correct</label><input id="pilotDialectCorrect" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotMeaningTotal">Meaning units checked</label><input id="pilotMeaningTotal" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotMeaningCorrect">Meaning units correct</label><input id="pilotMeaningCorrect" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotCriticalTotal">Critical terms checked</label><input id="pilotCriticalTotal" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotCriticalCorrect">Critical terms correct</label><input id="pilotCriticalCorrect" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotSpeakerTurns">Speaker turns checked</label><input id="pilotSpeakerTurns" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotSpeakerErrors">Speaker attribution errors</label><input id="pilotSpeakerErrors" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotUnsupported">Unsupported-content events</label><input id="pilotUnsupported" type="number" min="0" step="1" value="0"></div>
+                <div class="field"><label for="pilotOmissions">Omission events</label><input id="pilotOmissions" type="number" min="0" step="1" value="0"></div>
+              </div>
+              <p class="subtle">Count against a documented human reference. Zero means “not measured,” not perfect accuracy.</p>
+            </details>
+
+            <details class="pilot-section" open>
+              <summary>Trust and adoption</summary>
+              <div class="pilot-grid">
+                <div class="field"><label for="pilotTrustBefore">Trust before review (1–5)</label><select id="pilotTrustBefore"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+                <div class="field"><label for="pilotTrustAfter">Trust after review (1–5)</label><select id="pilotTrustAfter"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+                <div class="field"><label for="pilotConfidenceShare">Confidence to use/share (1–5)</label><select id="pilotConfidenceShare"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select></div>
+                <div class="field"><label for="pilotBlocker">Primary blocker</label><select id="pilotBlocker"><option value="none">None</option><option value="accuracy">Accuracy</option><option value="speaker_labels">Speaker labels</option><option value="review_effort">Review effort</option><option value="speed">Speed</option><option value="cost">Cost</option><option value="privacy">Privacy</option><option value="usability">Usability</option><option value="other">Other</option></select></div>
+                <div class="field"><label for="pilotUsable">Transcript usable?</label><select id="pilotUsable"><option value="true">Yes</option><option value="false">No</option></select></div>
+                <div class="field"><label for="pilotReuse">Would use APMA again?</label><select id="pilotReuse"><option value="true">Yes</option><option value="false">No</option></select></div>
+              </div>
+            </details>
+
+            <div class="button-row" style="margin-top:16px"><button class="button primary" id="savePilotEvidence" type="button">Save pilot evidence</button><button class="button" id="downloadPilotSummary" type="button">Download aggregate JSON</button></div>
+            <div class="notice" id="pilotMessage" aria-live="polite">Synthetic QA is excluded from external pilot outcomes. Select consented private only when the external governance record exists.</div>
+            <pre class="plain-output pilot-summary" id="pilotSummary">No evidence-eligible cohort outcomes recorded yet.</pre>
+          </div>
+        </div>
       </div>
     </section>
   </main>
@@ -483,6 +569,7 @@
       result: null,
       mode: "compare",
       minutesEstimate: null,
+      pilotSummary: null,
       activeTab: "transcript"
     };
 
@@ -499,7 +586,16 @@
       reviewContent: $("reviewContent"), minutesOutput: $("minutesOutput"), minutesStyleSelect: $("minutesStyleSelect"), minutesModelSelect: $("minutesModelSelect"),
       minutesEstimateSummary: $("minutesEstimateSummary"), confirmMinutes: $("confirmMinutes"), estimateMinutesButton: $("estimateMinutesButton"),
       generateMinutesButton: $("generateMinutesButton"), exportGrid: $("exportGrid"), pathBox: $("pathBox"), pathOutput: $("pathOutput"), copyPaths: $("copyPaths"),
-      trustGrid: $("trustGrid"), evidenceOutput: $("evidenceOutput")
+      trustGrid: $("trustGrid"), evidenceOutput: $("evidenceOutput"), pilotResult: $("pilotResult"), pilotCohort: $("pilotCohort"),
+      pilotParticipant: $("pilotParticipant"), pilotClassification: $("pilotClassification"), pilotUseCase: $("pilotUseCase"), pilotLanguages: $("pilotLanguages"),
+      pilotTaskStatus: $("pilotTaskStatus"), pilotRetentionDue: $("pilotRetentionDue"), pilotConsentRecord: $("pilotConsentRecord"), pilotPurposeNotice: $("pilotPurposeNotice"),
+      pilotConsent: $("pilotConsent"), pilotProviderDisclosure: $("pilotProviderDisclosure"), pilotWithdrawal: $("pilotWithdrawal"), pilotPublicExcerpt: $("pilotPublicExcerpt"),
+      pilotReviewMinutes: $("pilotReviewMinutes"), pilotLaborCost: $("pilotLaborCost"), pilotSupportCost: $("pilotSupportCost"), pilotPrice: $("pilotPrice"),
+      pilotDialectTotal: $("pilotDialectTotal"), pilotDialectCorrect: $("pilotDialectCorrect"), pilotMeaningTotal: $("pilotMeaningTotal"), pilotMeaningCorrect: $("pilotMeaningCorrect"),
+      pilotCriticalTotal: $("pilotCriticalTotal"), pilotCriticalCorrect: $("pilotCriticalCorrect"), pilotSpeakerTurns: $("pilotSpeakerTurns"), pilotSpeakerErrors: $("pilotSpeakerErrors"),
+      pilotUnsupported: $("pilotUnsupported"), pilotOmissions: $("pilotOmissions"), pilotTrustBefore: $("pilotTrustBefore"), pilotTrustAfter: $("pilotTrustAfter"),
+      pilotConfidenceShare: $("pilotConfidenceShare"), pilotBlocker: $("pilotBlocker"), pilotUsable: $("pilotUsable"), pilotReuse: $("pilotReuse"),
+      savePilotEvidence: $("savePilotEvidence"), downloadPilotSummary: $("downloadPilotSummary"), pilotMessage: $("pilotMessage"), pilotSummary: $("pilotSummary")
     };
 
     function money(value, exact = false) {
@@ -818,6 +914,206 @@
       elements.evidenceOutput.textContent = JSON.stringify(manifest, null, 2);
     }
 
+    function pilotNumber(element, integer = false) {
+      const value = Number(element.value || 0);
+      if (!Number.isFinite(value) || value < 0) throw new Error("Pilot measurements must be non-negative numbers.");
+      if (integer && !Number.isInteger(value)) throw new Error("Reference counts must be whole numbers.");
+      return value;
+    }
+
+    function setPilotMessage(text, error = false) {
+      elements.pilotMessage.textContent = text;
+      elements.pilotMessage.classList.toggle("error", error);
+    }
+
+    function syncPilotConsentControls() {
+      const consented = elements.pilotClassification.value === "consented_private";
+      document.querySelectorAll(".consent-control").forEach((control) => { control.disabled = !consented; });
+      if (!consented) {
+        elements.pilotConsentRecord.value = "";
+        elements.pilotRetentionDue.value = "";
+        elements.pilotPurposeNotice.checked = false;
+        elements.pilotConsent.checked = false;
+        elements.pilotProviderDisclosure.checked = false;
+        elements.pilotWithdrawal.checked = false;
+        elements.pilotPublicExcerpt.checked = false;
+      }
+      setPilotMessage(consented
+        ? "Before saving, verify the external purpose notice, consent basis, provider disclosure, withdrawal route and retention date."
+        : "Synthetic QA is excluded from external pilot outcomes. Select consented private only when the external governance record exists.");
+    }
+
+    function resetPilotForm() {
+      elements.pilotParticipant.value = "";
+      elements.pilotClassification.value = "synthetic";
+      elements.pilotUseCase.value = "research_interview";
+      elements.pilotLanguages.value = "hokkien, singlish, mandarin";
+      elements.pilotTaskStatus.value = "completed";
+      [elements.pilotReviewMinutes, elements.pilotLaborCost, elements.pilotSupportCost, elements.pilotPrice,
+        elements.pilotDialectTotal, elements.pilotDialectCorrect, elements.pilotMeaningTotal, elements.pilotMeaningCorrect,
+        elements.pilotCriticalTotal, elements.pilotCriticalCorrect, elements.pilotSpeakerTurns, elements.pilotSpeakerErrors,
+        elements.pilotUnsupported, elements.pilotOmissions].forEach((input) => { input.value = "0"; });
+      elements.pilotTrustBefore.value = "3";
+      elements.pilotTrustAfter.value = "3";
+      elements.pilotConfidenceShare.value = "3";
+      elements.pilotBlocker.value = "none";
+      elements.pilotUsable.value = "true";
+      elements.pilotReuse.value = "true";
+      syncPilotConsentControls();
+    }
+
+    function pilotPayload() {
+      const languages = elements.pilotLanguages.value.split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+      return {
+        cohort_code: elements.pilotCohort.value.trim(),
+        participant_code: elements.pilotParticipant.value.trim(),
+        data_classification: elements.pilotClassification.value,
+        use_case: elements.pilotUseCase.value,
+        language_mix: languages,
+        task_status: elements.pilotTaskStatus.value,
+        consent_record_id: elements.pilotConsentRecord.value.trim() || null,
+        purpose_notice_confirmed: elements.pilotPurposeNotice.checked,
+        consent_confirmed: elements.pilotConsent.checked,
+        provider_processing_disclosed: elements.pilotProviderDisclosure.checked,
+        withdrawal_route_disclosed: elements.pilotWithdrawal.checked,
+        retention_review_due_on: elements.pilotRetentionDue.value || null,
+        public_excerpt_authorized: elements.pilotPublicExcerpt.checked,
+        review_minutes: pilotNumber(elements.pilotReviewMinutes),
+        delivery_labor_cost_usd: pilotNumber(elements.pilotLaborCost),
+        support_cost_usd: pilotNumber(elements.pilotSupportCost),
+        price_charged_usd: pilotNumber(elements.pilotPrice),
+        trust_before: pilotNumber(elements.pilotTrustBefore, true),
+        trust_after: pilotNumber(elements.pilotTrustAfter, true),
+        confidence_to_share: pilotNumber(elements.pilotConfidenceShare, true),
+        transcript_usable: elements.pilotUsable.value === "true",
+        would_use_again: elements.pilotReuse.value === "true",
+        primary_blocker: elements.pilotBlocker.value,
+        reference_evaluation: {
+          dialect_units_total: pilotNumber(elements.pilotDialectTotal, true), dialect_units_correct: pilotNumber(elements.pilotDialectCorrect, true),
+          meaning_units_total: pilotNumber(elements.pilotMeaningTotal, true), meaning_units_correct: pilotNumber(elements.pilotMeaningCorrect, true),
+          critical_terms_total: pilotNumber(elements.pilotCriticalTotal, true), critical_terms_correct: pilotNumber(elements.pilotCriticalCorrect, true),
+          speaker_turns_total: pilotNumber(elements.pilotSpeakerTurns, true), speaker_attribution_errors: pilotNumber(elements.pilotSpeakerErrors, true),
+          unsupported_content_events: pilotNumber(elements.pilotUnsupported, true), omission_events: pilotNumber(elements.pilotOmissions, true)
+        }
+      };
+    }
+
+    function populatePilotForm(outcome) {
+      const reference = outcome.reference_evaluation || {};
+      elements.pilotCohort.value = outcome.cohort_code || "SG-HOK-01";
+      elements.pilotParticipant.value = outcome.participant_code || "";
+      elements.pilotClassification.value = outcome.data_classification || "synthetic";
+      elements.pilotUseCase.value = outcome.use_case || "research_interview";
+      elements.pilotLanguages.value = (outcome.language_mix || []).join(", ");
+      elements.pilotTaskStatus.value = outcome.task_status || "completed";
+      elements.pilotConsentRecord.value = outcome.consent_record_id || "";
+      elements.pilotRetentionDue.value = outcome.retention_review_due_on || "";
+      elements.pilotPurposeNotice.checked = Boolean(outcome.purpose_notice_confirmed);
+      elements.pilotConsent.checked = Boolean(outcome.consent_confirmed);
+      elements.pilotProviderDisclosure.checked = Boolean(outcome.provider_processing_disclosed);
+      elements.pilotWithdrawal.checked = Boolean(outcome.withdrawal_route_disclosed);
+      elements.pilotPublicExcerpt.checked = Boolean(outcome.public_excerpt_authorized);
+      elements.pilotReviewMinutes.value = outcome.review_minutes || 0;
+      elements.pilotLaborCost.value = outcome.delivery_labor_cost_usd || 0;
+      elements.pilotSupportCost.value = outcome.support_cost_usd || 0;
+      elements.pilotPrice.value = outcome.price_charged_usd || 0;
+      elements.pilotDialectTotal.value = reference.dialect_units_total || 0;
+      elements.pilotDialectCorrect.value = reference.dialect_units_correct || 0;
+      elements.pilotMeaningTotal.value = reference.meaning_units_total || 0;
+      elements.pilotMeaningCorrect.value = reference.meaning_units_correct || 0;
+      elements.pilotCriticalTotal.value = reference.critical_terms_total || 0;
+      elements.pilotCriticalCorrect.value = reference.critical_terms_correct || 0;
+      elements.pilotSpeakerTurns.value = reference.speaker_turns_total || 0;
+      elements.pilotSpeakerErrors.value = reference.speaker_attribution_errors || 0;
+      elements.pilotUnsupported.value = reference.unsupported_content_events || 0;
+      elements.pilotOmissions.value = reference.omission_events || 0;
+      elements.pilotTrustBefore.value = String(outcome.trust_before || 3);
+      elements.pilotTrustAfter.value = String(outcome.trust_after || 3);
+      elements.pilotConfidenceShare.value = String(outcome.confidence_to_share || 3);
+      elements.pilotBlocker.value = outcome.primary_blocker || "none";
+      elements.pilotUsable.value = String(Boolean(outcome.transcript_usable));
+      elements.pilotReuse.value = String(Boolean(outcome.would_use_again));
+      syncPilotConsentControls();
+    }
+
+    function pilotSummaryText(summary) {
+      const sample = summary.sample || {};
+      const adoption = summary.adoption || {};
+      const effort = summary.correction_effort || {};
+      const accuracy = summary.accuracy || {};
+      const economics = summary.unit_economics || {};
+      const trust = summary.trust || {};
+      return [
+        `Evidence-eligible jobs: ${sample.eligible_jobs || 0} · participants: ${sample.participants || 0}`,
+        `Completion: ${adoption.completion_rate_percent ?? "—"}% · repeat participants: ${adoption.repeat_participant_rate_percent ?? "—"}% · would use again: ${adoption.would_use_again_rate_percent ?? "—"}%`,
+        `Review effort: ${effort.review_minutes_per_audio_hour ?? "—"} min/audio hour · corrections: ${effort.corrections_per_100_segments ?? "—"} per 100 segments`,
+        `Dialect accuracy: ${accuracy.dialect_reference_accuracy_percent ?? "—"}% · meaning units: ${accuracy.meaning_unit_accuracy_percent ?? "—"}% · critical terms: ${accuracy.critical_term_accuracy_percent ?? "—"}%`,
+        `Delivery cost: ${money(economics.cost_per_reviewed_audio_hour_usd, true)} per audio hour · gross margin: ${economics.gross_margin_percent ?? "—"}%`,
+        `Trust change: ${trust.average_change ?? "—"} · confidence to use/share: ${trust.average_confidence_to_share ?? "—"}/5`
+      ].join("\n");
+    }
+
+    async function loadPilotSummary() {
+      const cohort = elements.pilotCohort.value.trim();
+      const query = cohort ? `?cohort_code=${encodeURIComponent(cohort)}` : "";
+      state.pilotSummary = await api(`/api/pilot/summary${query}`);
+      elements.pilotSummary.textContent = pilotSummaryText(state.pilotSummary);
+      return state.pilotSummary;
+    }
+
+    function renderPilot(result) {
+      resetPilotForm();
+      const evidence = result.pilot_evidence || {};
+      if (evidence.error) {
+        elements.pilotResult.textContent = evidence.error;
+        elements.pilotResult.classList.add("error");
+        return;
+      }
+      elements.pilotResult.classList.remove("error");
+      if (!evidence.recorded || !evidence.latest) {
+        elements.pilotResult.textContent = "No pilot outcome has been recorded for this job.";
+        elements.pilotSummary.textContent = "No evidence-eligible cohort outcomes recorded yet.";
+        return;
+      }
+      const latest = evidence.latest;
+      const metrics = latest.derived_job_metrics || {};
+      populatePilotForm(latest.pilot_outcome || {});
+      elements.pilotResult.textContent = `${latest.evidence_eligible ? "Evidence-eligible consented record" : "Synthetic QA record"} · ${metrics.correction_count || 0} corrections · ${metrics.review_minutes_per_audio_hour ?? "—"} review min/audio hour · event chain ${evidence.integrity && evidence.integrity.ok ? "verified" : "not verified"}.`;
+      loadPilotSummary().catch((error) => { elements.pilotSummary.textContent = error.message; });
+    }
+
+    async function savePilotOutcome() {
+      if (!state.result || !state.result.job_id) return;
+      elements.savePilotEvidence.disabled = true;
+      setPilotMessage("Validating governance inputs and deriving metrics from retained job evidence.");
+      try {
+        const payload = await api("/api/pilot/evidence", {
+          method: "POST", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({job_id: state.result.job_id, ...pilotPayload()})
+        });
+        state.result.pilot_evidence = payload.pilot_evidence;
+        state.pilotSummary = payload.pilot_summary;
+        renderPilot(state.result);
+        elements.pilotSummary.textContent = pilotSummaryText(payload.pilot_summary);
+        setPilotMessage(payload.pilot_evidence.latest.evidence_eligible
+          ? "Consented pilot evidence saved. The aggregate suppresses participant and consent-record codes."
+          : "Synthetic QA evidence saved and excluded from external pilot outcomes.");
+      } catch (error) { setPilotMessage(error.message, true); }
+      finally { elements.savePilotEvidence.disabled = false; }
+    }
+
+    async function downloadPilotSummary() {
+      try {
+        const summary = await loadPilotSummary();
+        const blob = new Blob([JSON.stringify(summary, null, 2) + "\n"], {type: "application/json"});
+        const anchor = document.createElement("a");
+        anchor.href = URL.createObjectURL(blob);
+        anchor.download = `apma-pilot-${elements.pilotCohort.value.trim() || "all"}-summary.json`;
+        document.body.append(anchor); anchor.click(); anchor.remove(); URL.revokeObjectURL(anchor.href);
+        setPilotMessage("Aggregate pilot JSON downloaded without participant codes, consent references, transcript text, or audio.");
+      } catch (error) { setPilotMessage(error.message, true); }
+    }
+
     function renderJob(result) {
       state.result = result;
       elements.jobTitle.textContent = result.title || result.job_id;
@@ -826,7 +1122,7 @@
       elements.jobState.className = `state-pill ${result.display_state || "processing"}`;
       if (result.audio_url) { elements.jobAudio.src = result.audio_url; elements.audioToolbar.hidden = false; }
       else { elements.jobAudio.removeAttribute("src"); elements.audioToolbar.hidden = true; }
-      renderTranscript(result); renderReview(result); renderExports(result); renderTrust(result);
+      renderTranscript(result); renderReview(result); renderExports(result); renderTrust(result); renderPilot(result);
       elements.minutesOutput.textContent = (result.outputs && result.outputs.minutes_md) || "No minutes output yet.";
       showWorkspace("job"); activateTab(result.display_state === "review_required" ? "review" : "transcript");
     }
@@ -896,10 +1192,14 @@
     elements.refreshJobs.addEventListener("click", loadJobs);
     elements.estimateMinutesButton.addEventListener("click", estimateMinutes);
     elements.generateMinutesButton.addEventListener("click", generateMinutes);
+    elements.pilotClassification.addEventListener("change", syncPilotConsentControls);
+    elements.savePilotEvidence.addEventListener("click", savePilotOutcome);
+    elements.downloadPilotSummary.addEventListener("click", downloadPilotSummary);
     elements.minutesStyleSelect.addEventListener("change", () => { state.minutesEstimate = null; elements.generateMinutesButton.disabled = true; });
     elements.minutesModelSelect.addEventListener("change", () => { state.minutesEstimate = null; elements.generateMinutesButton.disabled = true; });
     elements.copyPaths.addEventListener("click", async () => { try { await navigator.clipboard.writeText(elements.pathOutput.textContent); setMessage("Local folder addresses copied."); } catch { setMessage("Copy was blocked. Select the folder text and copy it manually.", true); } });
 
+    syncPilotConsentControls();
     Promise.all([loadStatus(), loadJobs()]).catch((error) => setMessage(error.message, true));
   </script>
 </body>

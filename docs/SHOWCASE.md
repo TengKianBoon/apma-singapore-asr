@@ -28,6 +28,25 @@ test was fixed and rechecked at 800 pixels.
 See the machine-readable
 [synthetic UI verification record](evidence/ui-flow-showcase-2026-09-11.json).
 
+## Pilot evidence loop
+
+The local dashboard now includes a progressive **Pilot outcome** tab. It turns
+the proposed design-partner pilot into an executable measurement workflow:
+
+- synthetic QA is kept separate and excluded from external-pilot aggregates;
+- real pilot records require structured purpose, consent-basis, provider,
+  withdrawal-route, and retention-review attestations;
+- duration, provider cost, segment count, and correction history come from the
+  retained job rather than operator re-entry;
+- dialect, meaning-unit, critical-term, speaker, review-effort, adoption, trust,
+  price, and support measurements use bounded fields; and
+- the aggregate JSON suppresses participant codes, consent references, source
+  hashes, transcript text, and audio.
+
+This is pilot infrastructure, not evidence that adoption or dialect-accuracy
+targets have been achieved. See the [consented pilot runbook](CONSENTED_PILOT_RUNBOOK.md)
+and [synthetic pilot-workflow verification](evidence/pilot-workflow-showcase-2026-09-11.json).
+
 ## Why this is more than an API wrapper
 
 Hokkien, Singlish, Mandarin, and English can occur within one natural
@@ -72,7 +91,9 @@ flowchart LR
 | Qwen `QwenA3FT` | Selectable; asynchronous Filetrans re-verified inside APMA on 11.63 seconds of synthetic speech on 2026-09-11 | The live run used the size-bounded `data_uri` compatibility path and returned native timing plus one provider speaker label. Private OSS remains available for larger production chunks. |
 
 See [the current live-provider verification record](LIVE_PROVIDER_VERIFICATION_2026-09-11.md)
-for bounded MERaLiON/Qwen evidence and
+for bounded MERaLiON/Qwen evidence,
+[the earlier verification record](LIVE_PROVIDER_VERIFICATION_2026-08-28.md)
+for MERaLiON/Gemini evidence, and
 [the 4ofX transcription architecture](TRANSCRIPTION_ARCHITECTURE_4OFX.md) for
 provider-role and provenance decisions.
 
@@ -100,15 +121,18 @@ docker run --rm -e DRY_RUN=true -v "${PWD}:/app" -w /app apma-v5:showcase pytest
 These commands run the repository test suite in Docker with external provider
 execution disabled.
 
-## Publication boundary
+## Current publication boundary
 
-This public source snapshot is available under the MIT License. It is not a
-hosted multi-user service: the local dashboard has no authentication and must
-not be exposed directly to the public internet. Runtime jobs, real recordings,
-credentials, raw non-public provider artifacts, and source development history
-are outside this repository.
+The source is available under the MIT License after the prepared branch is
+reviewed and released. It is not a hosted multi-user service: the local
+dashboard has no authentication and must not be exposed directly to the public
+internet. The private development repository must not simply be switched to
+public because older private branches are outside the reviewed release
+boundary; use the clean-history release procedure instead.
 
 For the product, governance, adoption, and AIRI-aligned evidence plan, see the
 [AI product competency roadmap](AIRI_PRODUCT_COMPETENCY_ROADMAP.md).
 For a role-specific and limitation-aware evidence chain, see
 [Solution Architecture, FDE and AIRI Evidence](SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md).
+For pilot operation and publication boundaries, see the
+[Consented Pilot Runbook](CONSENTED_PILOT_RUNBOOK.md).

@@ -8,7 +8,9 @@ Implementation snapshot (2026-09-11): the lean local tranche now includes the
 guided import/outcome/cost/review shell, upload progress, recent retained jobs,
 timestamp-linked playback, focused exception-review filters, human speaker
 labels, structured exports, and trust evidence. Durable background processing
-and multi-user features remain deferred as described below.
+and multi-user features remain deferred as described below. The local Pilot
+outcome tab now operationalises consent-gated, pseudonymous outcome measurement
+without turning APMA into a general analytics platform.
 
 ## Product Experience Objective
 
