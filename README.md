@@ -52,6 +52,9 @@ into useful Southeast Asian recorded-conversation evidence.
   fail-closed readiness and cost gates.
 - Raw provider evidence, provider-native timing/speaker metadata, deterministic
   transcript exports, comparison, reconciliation, and human-review history.
+- Optional targeted human verification that presents only flagged exact clips,
+  records content and speaker decisions separately, and reports actual selected
+  audio coverage without claiming an unmeasured accuracy uplift.
 - A local dashboard for upload, exact budget approval, transcription, review,
   minutes generation, and retained output paths. Its guided
   `Audio → Outcome → Cost → Review` flow keeps provider details available but
@@ -68,6 +71,8 @@ into useful Southeast Asian recorded-conversation evidence.
 Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [architecture](ARCHITECTURE.md) and
 [transcription product contract](product-specs/APMA_TRANSCRIPTION_PRODUCT_CONTRACT.md).
+The [targeted human verification workflow](docs/TARGETED_HUMAN_VERIFICATION.md)
+defines the optional low-friction assurance step and its honest completion labels.
 The [AI product competency and AIRI roadmap](docs/AIRI_PRODUCT_COMPETENCY_ROADMAP.md)
 maps the work to product decisions, governance, security, trust, adoption, and
 measurable value without claiming an AIRI certification.

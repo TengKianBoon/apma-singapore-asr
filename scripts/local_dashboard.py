@@ -8,7 +8,7 @@ import shutil
 import sys
 import time
 import uuid
-from copy import copy
+from copy import copy, deepcopy
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -20,7 +20,11 @@ from services.audio_project import project_paths
 from services.audio_formats import SUPPORTED_INPUT_EXTENSIONS
 from services.config import Config, load_config, paid_cost_authorization_amount
 from services import job as job_mod
-from services.human_review import REVIEW_HTML, ReviewWorkspace
+from services.human_review import (
+    REVIEW_HTML,
+    ReviewWorkspace,
+    speaker_sensitive_window_ids,
+)
 from services.integrity import sha256_file
 from services.speaker_overlay import SpeakerMappingStore
 from services.minutes.openai_adapter import LiveOpenAIMinutesGenerator, estimate_minutes_cost, minutes_model_options
@@ -211,7 +215,35 @@ def _review_workspace_from_environment(job_id: str | None = None) -> ReviewWorks
             final_reviewed = job_dir / "quality" / "review" / "FINAL_REVIEWED.json"
         if not final_draft.is_file() or not audio_dir.is_dir():
             raise RuntimeError(f"Quality review artifacts are incomplete for job {safe_job_id}")
-        return ReviewWorkspace(final_draft, audio_dir, final_reviewed.parent)
+        verification = quality.get("targeted_human_verification")
+        if not isinstance(verification, dict):
+            verification = {}
+        preprocess = (
+            manifest.get("preprocess")
+            if isinstance(manifest.get("preprocess"), dict)
+            else {}
+        )
+        speaker_review_ids: set[str] = set()
+        if bool(verification.get("requested")):
+            overlay_item = outputs.get("speaker_overlay")
+            if isinstance(overlay_item, dict):
+                overlay_path = Path(str(overlay_item.get("json") or ""))
+                if not overlay_path.is_file():
+                    overlay_path = (
+                        job_dir / "quality" / "speaker-overlay" / "speaker_overlay.json"
+                    )
+                if overlay_path.is_file():
+                    speaker_review_ids = speaker_sensitive_window_ids(
+                        json.loads(overlay_path.read_text(encoding="utf-8"))
+                    )
+        return ReviewWorkspace(
+            final_draft,
+            audio_dir,
+            final_reviewed.parent,
+            targeted_verification_requested=bool(verification.get("requested")),
+            source_audio_seconds=float(preprocess.get("duration_seconds", 0.0) or 0.0),
+            speaker_review_window_ids=speaker_review_ids,
+        )
     final_draft = os.environ.get(REVIEW_FINAL_DRAFT_ENV)
     audio_dir = os.environ.get(REVIEW_AUDIO_DIR_ENV)
     output_dir = os.environ.get(REVIEW_OUTPUT_DIR_ENV)
@@ -236,13 +268,26 @@ def _sync_quality_review_status(job_id: str | None, view: dict) -> None:
     job_dir = _job_path(safe_job_id)
     manifest = job_mod.read_manifest(job_dir)
     quality = manifest.get("quality") if isinstance(manifest.get("quality"), dict) else {}
-    unresolved = int(view.get("statistics", {}).get("unresolved_windows", 0))
+    verification_summary = view.get("targeted_verification")
+    if not isinstance(verification_summary, dict):
+        verification_summary = {}
+    unresolved = int(
+        verification_summary.get(
+            "windows_requiring_attention",
+            view.get("statistics", {}).get("unresolved_windows", 0),
+        )
+    )
     quality["overall_status"] = "REVIEW_REQUIRED" if unresolved else "COMPLETE"
     stages = quality.get("stages") if isinstance(quality.get("stages"), dict) else {}
     review_stage = stages.get("REVIEW") if isinstance(stages.get("REVIEW"), dict) else {}
     review_stage["unresolved_windows"] = unresolved
     stages["REVIEW"] = review_stage
     quality["stages"] = stages
+    verification = quality.get("targeted_human_verification")
+    if not isinstance(verification, dict):
+        verification = {}
+    verification["summary"] = deepcopy(verification_summary)
+    quality["targeted_human_verification"] = verification
     manifest["quality"] = quality
     manifest["state"] = quality["overall_status"].lower()
     manifest["updated_at"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
@@ -457,6 +502,7 @@ def dashboard_job(job_id: str) -> dict:
     if not manifest:
         raise FileNotFoundError("Job was not found")
     item = _job_list_item(manifest)
+    quality = manifest.get("quality") if isinstance(manifest.get("quality"), dict) else {}
     outputs = collect_job_outputs(safe_job_id)
     try:
         pilot_evidence = load_pilot_evidence(job_dir)
@@ -473,6 +519,9 @@ def dashboard_job(job_id: str) -> dict:
         "pilot_evidence": pilot_evidence,
         "audio_url": f"/api/jobs/{safe_job_id}/audio" if _job_audio_path(safe_job_id) else None,
         "review_url": f"/review?job_id={safe_job_id}" if item["has_quality_review"] else None,
+        "targeted_human_verification": deepcopy(
+            quality.get("targeted_human_verification") or {}
+        ),
     }
 
 
@@ -1298,7 +1347,11 @@ def run_uploaded_job(
     return payload
 
 
-def run_uploaded_quality_job(upload_id: str, confirm_live_api: bool) -> dict:
+def run_uploaded_quality_job(
+    upload_id: str,
+    confirm_live_api: bool,
+    targeted_human_verification_requested: bool = False,
+) -> dict:
     if not confirm_live_api:
         return {"ok": False, "errors": ["Quality Transcription requires explicit live confirmation."]}
     cfg = load_config()
@@ -1349,6 +1402,7 @@ def run_uploaded_quality_job(upload_id: str, confirm_live_api: bool) -> dict:
         str(audio_file),
         cfg,
         source_filename=source_filename,
+        targeted_human_verification_requested=targeted_human_verification_requested,
     )
     result["resumed_existing_job"] = bool(resumable_job_id)
     if result.get("ok"):
@@ -2475,11 +2529,32 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     },
                 )
                 return
+            if path == "/api/review/speaker-decisions":
+                data = json.loads(body.decode("utf-8"))
+                job_id = str(data.get("job_id") or query_job_id or "") or None
+                workspace = _review_workspace_from_environment(job_id)
+                decision = workspace.save_speaker_decision(
+                    window_id=str(data.get("window_id", "")),
+                    speaker_status=str(data.get("speaker_status", "")),
+                )
+                _json_response(
+                    self,
+                    200,
+                    {
+                        "ok": True,
+                        "decision": decision,
+                        "review": _review_payload(job_id),
+                    },
+                )
+                return
             if path == "/api/quality/run":
                 data = json.loads(body.decode("utf-8"))
                 payload = run_uploaded_quality_job(
                     upload_id=str(data.get("upload_id", "")),
                     confirm_live_api=bool(data.get("confirm_live_api", False)),
+                    targeted_human_verification_requested=bool(
+                        data.get("targeted_human_verification_requested", False)
+                    ),
                 )
                 _json_response(self, 200 if payload.get("ok") else 400, payload)
                 return

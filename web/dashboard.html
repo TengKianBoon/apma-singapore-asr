@@ -195,6 +195,10 @@
     .metric span { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; }
     .approval { display: flex; gap: 9px; align-items: flex-start; margin: 13px 0; font-size: 12px; font-weight: 650; line-height: 1.45; }
     .approval input { width: 17px; height: 17px; margin-top: 1px; flex: 0 0 auto; }
+    .verification-option { margin: 13px 0; padding: 13px; border: 1px solid #b8d7d1; border-radius: 10px; background: var(--teal-soft); }
+    .verification-option label { display: flex; gap: 9px; align-items: flex-start; color: #164f49; font-size: 12px; font-weight: 750; line-height: 1.45; }
+    .verification-option input { width: 17px; height: 17px; margin-top: 1px; flex: 0 0 auto; }
+    .verification-option p { margin: 7px 0 0 26px; color: #3f625f; font-size: 11px; line-height: 1.5; }
     .button-row { display: flex; gap: 9px; flex-wrap: wrap; }
     .button {
       min-height: 42px;
@@ -410,6 +414,11 @@
             </div>
             <p class="subtle" id="estimateSummary">Choose an outcome to see its processing and cost boundary.</p>
 
+            <div class="verification-option" id="targetedVerificationOption">
+              <label><input id="targetedVerification" type="checkbox"><span>Add targeted human audio verification</span></label>
+              <p>Recommended when Hokkien, names, numbers, decisions or speaker attribution matter. APMA will prepare only unclear, conflicting and speaker-sensitive clips, then show the actual review effort. This is selected-window review, not a full-audio accuracy guarantee.</p>
+            </div>
+
             <label class="approval">
               <input id="confirmLive" type="checkbox">
               <span id="approvalText">I approve this one provider run within the displayed maximum cost.</span>
@@ -579,6 +588,7 @@
       uploadProgress: $("uploadProgress"), uploadProgressTrack: $("uploadProgressTrack"), uploadProgressBar: $("uploadProgressBar"), uploadProgressLabel: $("uploadProgressLabel"),
       inspectButton: $("inspectButton"), outcomeSection: $("outcomeSection"), modelSelect: $("modelSelect"), providerPlan: $("providerPlan"),
       durationValue: $("durationValue"), chunkValue: $("chunkValue"), costValue: $("costValue"), estimateSummary: $("estimateSummary"),
+      targetedVerificationOption: $("targetedVerificationOption"), targetedVerification: $("targetedVerification"),
       confirmLive: $("confirmLive"), approvalText: $("approvalText"), startButton: $("startButton"), message: $("message"),
       recentJobs: $("recentJobs"), refreshJobs: $("refreshJobs"), emptyWorkspace: $("emptyWorkspace"), processingWorkspace: $("processingWorkspace"),
       processingTitle: $("processingTitle"), processingMessage: $("processingMessage"), jobWorkspace: $("jobWorkspace"), jobTitle: $("jobTitle"),
@@ -680,6 +690,8 @@
     function selectMode(mode) {
       state.mode = mode;
       document.querySelectorAll(".mode-card").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === mode)));
+      elements.targetedVerificationOption.hidden = mode !== "compare";
+      if (mode !== "compare") elements.targetedVerification.checked = false;
       if (mode !== "compare") {
         const preferred = preferredModel(mode);
         if (preferred) elements.modelSelect.value = preferred.model;
@@ -790,7 +802,11 @@
         if (state.mode === "compare") {
           payload = await api("/api/quality/run", {
             method: "POST", headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({upload_id: state.upload.upload_id, confirm_live_api: true})
+            body: JSON.stringify({
+              upload_id: state.upload.upload_id,
+              confirm_live_api: true,
+              targeted_human_verification_requested: elements.targetedVerification.checked
+            })
           });
         } else {
           payload = await api("/api/run", {
@@ -877,10 +893,21 @@
         note.append(heading, copy); elements.reviewContent.append(note); return;
       }
       const note = document.createElement("div"); note.className = "review-callout";
-      const heading = document.createElement("h2"); heading.textContent = result.review_required_count ? `${result.review_required_count} areas require human review` : "Review complete";
-      const copy = document.createElement("p"); copy.textContent = "Listen to exact clips, compare unchanged provider candidates, correct speakers, and retain every human decision.";
+      const verification = result.targeted_human_verification || {};
+      const summary = verification.summary || {};
+      const heading = document.createElement("h2"); heading.textContent = summary.completion_label || (result.review_required_count ? `${result.review_required_count} areas require human review` : "Review complete");
+      const selectedCount = summary.selected_window_count ?? result.review_required_count ?? 0;
+      const selectedSeconds = summary.selected_audio_seconds;
+      const selectedShare = summary.selected_audio_share_percent;
+      const copy = document.createElement("p");
+      copy.textContent = summary.selected_window_count !== undefined
+        ? `${selectedCount} selected clips · ${durationLabel(selectedSeconds)} of audio${selectedShare === null || selectedShare === undefined ? "" : ` · ${selectedShare}% of the recording`}. Listen only to these exact clips and record separate word and speaker decisions.`
+        : "Listen to exact clips, compare unchanged provider candidates, correct speakers, and retain every human decision.";
+      const boundary = document.createElement("p");
+      boundary.className = "subtle";
+      boundary.textContent = summary.coverage_statement || "Selected-window review does not mean the full recording was manually reviewed. No accuracy uplift is claimed without a representative reference evaluation.";
       const link = document.createElement("a"); link.className = "button primary"; link.href = result.review_url; link.textContent = result.review_required_count ? "Review flagged areas" : "Open review record";
-      note.append(heading, copy, link); elements.reviewContent.append(note);
+      note.append(heading, copy, boundary, link); elements.reviewContent.append(note);
     }
 
     function renderExports(result) {

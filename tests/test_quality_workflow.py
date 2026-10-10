@@ -194,6 +194,10 @@ def test_integrated_quality_workflow_resumes_without_repeating_primary_calls(tmp
     assert completed["review_url"] == "/review?job_id=quality-fixture"
     assert completed["outputs"] == completed["quality"]["outputs"]
     assert completed["review_required_count"] >= 1
+    assert completed["targeted_human_verification"]["requested"] is False
+    assert completed["targeted_human_verification"]["summary"][
+        "accuracy_uplift_claimed"
+    ] is False
 
     completed_stages = [
         item["stage"]
@@ -321,6 +325,38 @@ def test_dashboard_exposes_quality_action_and_keeps_simple_action():
     assert "/api/quality/run" in local_dashboard.DASHBOARD_HTML
     assert "/api/run" in local_dashboard.DASHBOARD_HTML
     assert "Review flagged areas" in local_dashboard.DASHBOARD_HTML
+    assert "Add targeted human audio verification" in local_dashboard.DASHBOARD_HTML
+    assert "targeted_human_verification_requested" in local_dashboard.DASHBOARD_HTML
+    assert "selected-window review" in local_dashboard.DASHBOARD_HTML
+
+
+def test_targeted_verification_opt_in_persists_when_quality_job_resumes(tmp_path):
+    source = tmp_path / "authorized-targeted-review.wav"
+    generate_sine_wav(str(source), duration_sec=1.2, framerate=8000)
+    storage = tmp_path / "jobs"
+    cfg = _config(storage)
+
+    first = run_quality_workflow(
+        "quality-targeted-review",
+        str(source),
+        cfg,
+        stop_after_stage="INGEST",
+        targeted_human_verification_requested=True,
+    )
+    resumed = run_quality_workflow(
+        "quality-targeted-review",
+        str(source),
+        cfg,
+        stop_after_stage="CHUNK",
+        targeted_human_verification_requested=False,
+    )
+
+    assert first["targeted_human_verification"]["requested"] is True
+    assert resumed["targeted_human_verification"]["requested"] is True
+    assert resumed["targeted_human_verification"]["scope"] == (
+        "selected_flagged_windows"
+    )
+    assert resumed["targeted_human_verification"]["accuracy_uplift_claimed"] is False
 
 
 def test_quality_failure_names_the_provider_that_failed(tmp_path):
@@ -443,6 +479,33 @@ def test_quality_workflow_without_red_uses_existing_regions_and_no_rescue_calls(
     assert len(list(Path(manifest["quality"]["review_audio_dir"]).glob("*.wav"))) == len(
         comparison["regions"]
     )
+
+
+def test_targeted_opt_in_flags_multi_speaker_window_even_when_text_agrees(tmp_path):
+    source = tmp_path / "authorized-speaker-sensitive.wav"
+    generate_sine_wav(str(source), duration_sec=3.2, framerate=8000)
+    storage = tmp_path / "jobs"
+    cfg = _config(storage)
+    common_text = "Same retained multilingual text 世界 selamat pagi"
+    factory = FakeQualityFactory(
+        {provider: common_text for provider in PROVIDER_ORDER}
+    )
+
+    completed = run_quality_workflow(
+        "quality-speaker-sensitive",
+        str(source),
+        cfg,
+        transcriber_factory=factory,
+        targeted_human_verification_requested=True,
+    )
+    summary = completed["targeted_human_verification"]["summary"]
+
+    assert completed["state"] == "review_required"
+    assert summary["content_review_window_count"] == 0
+    assert summary["speaker_sensitive_window_count"] >= 1
+    assert summary["selected_window_count"] >= 1
+    assert summary["speaker_decisions"]["pending"] == summary["selected_window_count"]
+    assert summary["completion_label"] == "Automated transcript"
 
 
 def test_quality_defers_oversized_rescue_to_review_without_provider_calls(

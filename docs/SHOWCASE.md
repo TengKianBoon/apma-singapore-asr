@@ -18,6 +18,13 @@ The current dashboard guides the operator through
 under advanced details, while the primary choices describe the result the user
 wants: Fast Draft, SEA Multilingual, Speaker-labelled, or Compare & Verify.
 
+Compare & Verify now offers an optional targeted human verification path. APMA
+reports the exact flagged clip count, selected-audio duration, and share of the
+recording; the reviewer then records words and speaker judgments separately.
+“Still unclear” remains unresolved, and a selected-window label never implies
+full-audio human review. See the
+[workflow and assurance boundary](TARGETED_HUMAN_VERIFICATION.md).
+
 On 2026-09-11, the actual browser flow was exercised in Docker with the tracked
 `synthetic_legacy_amr_wb.amr` fixture. File selection, upload progress, duration
 and chunk coverage, cost preflight, all four outcome choices, MERaLiON
@@ -78,7 +85,9 @@ flowchart LR
     H --> I
     I --> J[Canonical transcript and exports]
     J --> K[Comparison and reconciliation]
-    K --> L[Human review and minutes]
+    K --> L[Targeted exact-clip review]
+    L --> M[Separate content and speaker decisions]
+    M --> N[Scoped assurance label and exports]
 ```
 
 ## Provider status: evidence, not marketing

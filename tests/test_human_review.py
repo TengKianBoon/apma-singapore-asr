@@ -10,7 +10,12 @@ import socket
 import pytest
 
 from scripts import local_dashboard
-from services.human_review import PROVIDER_ORDER, REVIEW_HTML, ReviewWorkspace
+from services.human_review import (
+    PROVIDER_ORDER,
+    REVIEW_HTML,
+    ReviewWorkspace,
+    speaker_sensitive_window_ids,
+)
 from tests.helpers import generate_sine_wav
 
 
@@ -325,3 +330,137 @@ def test_dashboard_review_route_contract_and_environment_workspace(tmp_path, mon
     assert 'data-filter="RED"' in REVIEW_HTML
     assert 'data-filter="AMBER"' in REVIEW_HTML
     assert "renderVisibleWindows" in REVIEW_HTML
+    assert "/api/review/speaker-decisions" in REVIEW_HTML
+    assert "Still unclear" in REVIEW_HTML
+    assert "Speaker labels sound right" in REVIEW_HTML
+    assert "Playback speed" in REVIEW_HTML
+
+
+def test_unclear_decision_records_attention_without_inventing_final_text(tmp_path):
+    final_path, audio_dir, output_dir, _ = _write_workspace(tmp_path)
+    workspace = ReviewWorkspace(
+        final_path,
+        audio_dir,
+        output_dir,
+        targeted_verification_requested=True,
+        source_audio_seconds=120.0,
+    )
+
+    decision = workspace.save_decision(
+        "rescue-window-00001",
+        "unclear",
+        reviewed_at="2026-10-10T01:00:00Z",
+    )
+    view = workspace.view()
+    window = view["windows"][0]
+    verification = view["targeted_verification"]
+
+    assert decision["final_text"] is None
+    assert decision["final_text_sha256"] is None
+    assert decision["reason_code"] == "audio_still_unclear"
+    assert window["review_required"] is True
+    assert window["final_text"] is None
+    assert window["review_resolution"]["decision_type"] == "unclear"
+    assert verification["requested"] is True
+    assert verification["content_decisions"]["unclear"] == 1
+    assert verification["unresolved_selected_windows"] == 4
+    assert verification["accuracy_uplift_claimed"] is False
+    assert verification["completion_label"] == (
+        "Selected-window human reviewed with unresolved items"
+    )
+
+
+def test_content_and_speaker_verification_are_separate_and_auditable(tmp_path):
+    final_path, audio_dir, output_dir, _ = _write_workspace(tmp_path)
+    workspace = ReviewWorkspace(
+        final_path,
+        audio_dir,
+        output_dir,
+        targeted_verification_requested=True,
+        source_audio_seconds=120.0,
+    )
+    _resolve_all(workspace)
+    for index in (1, 3, 4, 5):
+        workspace.save_speaker_decision(
+            f"rescue-window-{index:05d}",
+            "not_applicable" if index == 5 else "confirmed",
+            reviewed_at=f"2026-10-10T01:0{index}:00Z",
+        )
+
+    view = workspace.view()
+    verification = view["targeted_verification"]
+    reviewed = json.loads(workspace.reviewed_json_path.read_text(encoding="utf-8"))
+
+    assert workspace.speaker_decisions_path.is_file()
+    assert verification["completion_label"] == "Selected-window human confirmed"
+    assert verification["selected_window_count"] == 4
+    assert verification["selected_audio_seconds"] == 96.0
+    assert verification["selected_audio_share_percent"] == 80.0
+    assert verification["content_decisions"]["resolved"] == 4
+    assert verification["speaker_decisions"]["reviewed"] == 4
+    assert verification["speaker_decisions"]["confirmed"] == 3
+    assert verification["speaker_decisions"]["not_applicable"] == 1
+    assert verification["windows_requiring_attention"] == 0
+    assert reviewed["windows"][0]["speaker_review_resolution"]["speaker_status"] == "confirmed"
+    assert reviewed["windows"][0]["provider_candidates"] == workspace.source["windows"][0]["provider_candidates"]
+
+
+def test_opt_in_adds_multi_speaker_green_window_without_reopening_its_text(tmp_path):
+    final_path, audio_dir, output_dir, _ = _write_workspace(tmp_path)
+    overlay = {
+        "windows": [
+            {
+                "window_id": "rescue-window-00002",
+                "speaker_evidence": {
+                    "segments": [
+                        {"speaker_id": "spk_1", "global_start_sec": 939.0, "global_end_sec": 950.0},
+                        {"speaker_id": "spk_2", "global_start_sec": 950.0, "global_end_sec": 963.0},
+                    ]
+                },
+            }
+        ]
+    }
+    speaker_ids = speaker_sensitive_window_ids(overlay)
+    workspace = ReviewWorkspace(
+        final_path,
+        audio_dir,
+        output_dir,
+        targeted_verification_requested=True,
+        source_audio_seconds=120.0,
+        speaker_review_window_ids=speaker_ids,
+    )
+
+    view = workspace.view()
+    green = view["windows"][1]
+    verification = view["targeted_verification"]
+
+    assert speaker_ids == {"rescue-window-00002"}
+    assert verification["selected_window_count"] == 5
+    assert verification["content_review_window_count"] == 4
+    assert verification["speaker_sensitive_window_count"] == 1
+    assert green["targeted_verification_selection"] == {
+        "selected": True,
+        "content_review": False,
+        "speaker_review": True,
+    }
+    with pytest.raises(ValueError, match="do not require a Goal J decision"):
+        workspace.save_decision(
+            "rescue-window-00002", "manual_correction", final_text="not allowed"
+        )
+    speaker_decision = workspace.save_speaker_decision(
+        "rescue-window-00002", "confirmed"
+    )
+    assert speaker_decision["speaker_status"] == "confirmed"
+
+
+def test_classic_review_does_not_require_speaker_checks_without_opt_in(tmp_path):
+    final_path, audio_dir, output_dir, _ = _write_workspace(tmp_path)
+    workspace = ReviewWorkspace(final_path, audio_dir, output_dir)
+    _resolve_all(workspace)
+
+    verification = workspace.view()["targeted_verification"]
+
+    assert verification["requested"] is False
+    assert verification["speaker_decisions"]["pending"] == 0
+    assert verification["windows_requiring_attention"] == 0
+    assert verification["completion_label"] == "Selected-window human confirmed"

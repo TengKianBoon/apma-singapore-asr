@@ -32,8 +32,10 @@ tracked under `exec-plans/active/`.
    eligible Green regions. Amber and Red remain review-required; the system
    does not silently merge, translate, or clean competing speech.
 9. `services.human_review` and `services.transcript_corrections` preserve exact
-   human decisions and correction history without modifying source provider
-   evidence.
+   human content decisions, separate speaker-verification decisions, and
+   correction history without modifying source provider evidence. Targeted
+   verification reports selected clip duration and completion scope from
+   retained artifacts rather than presenting a generic accuracy score.
 10. `services.transcript_exports` and `services.meeting_archive` derive
     HTML/TXT/SRT/VTT/DOCX/PDF views and durable meeting packages from canonical
     JSON. Untimed segments do not receive invented timestamps.
@@ -66,7 +68,10 @@ The dashboard design preserves these architectural decisions:
   prevents a job identifier from escaping the storage root;
 - transcript segments seek audio by retained application/provider timing, while
   exact exception correction and speaker relabelling remain provenance-bearing
-  human decisions; and
+  human decisions;
+- the optional targeted-verification preference is manifest-backed; its review
+  screen keeps content and speaker adjudication separate and never labels
+  selected-window review as full-audio human review; and
 - minutes and presentation exports remain visibly derived from the canonical
   transcript rather than becoming new transcript authorities; and
 - the pilot tab sends structured outcomes to the Python evidence service;
