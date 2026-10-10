@@ -1,0 +1,149 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">APMA transcription assurance workflow</title>
+  <desc id="desc">A public-safe workflow graphic showing audio import, inspection and pricing, provider-routed transcription, comparison, optional targeted human verification, accountable export, and consented pilot learning.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#17324d" flood-opacity="0.10"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f8f7f"/>
+    </marker>
+    <style>
+      .title { font: 700 38px "Segoe UI", Arial, sans-serif; fill: #102a43; }
+      .subtitle { font: 400 20px "Segoe UI", Arial, sans-serif; fill: #5d7088; }
+      .eyebrow { font: 700 15px "Segoe UI", Arial, sans-serif; fill: #0b766a; letter-spacing: 1.4px; }
+      .step { font: 700 19px "Segoe UI", Arial, sans-serif; fill: #102a43; }
+      .body { font: 400 16px "Segoe UI", Arial, sans-serif; fill: #4f647b; }
+      .small { font: 600 14px "Segoe UI", Arial, sans-serif; fill: #0b766a; }
+      .white { fill: #ffffff; }
+      .branch { font: 700 16px "Segoe UI", Arial, sans-serif; fill: #ffffff; }
+      .control { font: 600 14px "Segoe UI", Arial, sans-serif; fill: #324a62; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#f4f7fb"/>
+  <rect x="0" y="0" width="1600" height="16" fill="#0f8f7f"/>
+
+  <g transform="translate(64 50)">
+    <rect x="0" y="0" width="58" height="58" rx="16" fill="#153b5c"/>
+    <text x="29" y="38" text-anchor="middle" font-family="Segoe UI, Arial" font-size="26" font-weight="700" fill="#ffffff">A</text>
+    <text x="82" y="30" class="title">APMA Transcription Assurance</text>
+    <text x="82" y="61" class="subtitle">From difficult Southeast Asian audio to an accountable transcript</text>
+  </g>
+
+  <g transform="translate(1232 54)">
+    <rect width="300" height="46" rx="23" fill="#e5f6f3" stroke="#a7ded5"/>
+    <circle cx="25" cy="23" r="7" fill="#0f8f7f"/>
+    <text x="45" y="29" class="small">PUBLIC-SAFE WORKFLOW</text>
+  </g>
+
+  <text x="800" y="161" text-anchor="middle" font-family="Segoe UI, Arial" font-size="25" font-weight="600" fill="#183b56">
+    Audio → Inspect &amp; price → Transcribe → Compare → Verify selected clips → Export → Learn
+  </text>
+  <text x="800" y="194" text-anchor="middle" class="subtitle">
+    AI finds where attention is needed; people verify only the relevant clips.
+  </text>
+
+  <!-- Main four-stage pipeline -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="235" width="285" height="170" rx="20" fill="#ffffff" stroke="#d5e0ea"/>
+    <rect x="405" y="235" width="285" height="170" rx="20" fill="#ffffff" stroke="#d5e0ea"/>
+    <rect x="750" y="235" width="285" height="170" rx="20" fill="#ffffff" stroke="#d5e0ea"/>
+    <rect x="1095" y="235" width="285" height="170" rx="20" fill="#ffffff" stroke="#0f8f7f" stroke-width="2"/>
+  </g>
+
+  <g>
+    <circle cx="98" cy="273" r="22" fill="#153b5c"/>
+    <text x="98" y="280" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">1</text>
+    <text x="132" y="280" class="step">AUDIO</text>
+    <text x="88" y="326" class="body">Existing recording</text>
+    <text x="88" y="351" class="body">kept as the source of truth</text>
+    <rect x="88" y="371" width="155" height="25" rx="12.5" fill="#edf3f8"/>
+    <text x="165" y="389" text-anchor="middle" class="small">SOURCE HASH</text>
+  </g>
+
+  <g>
+    <circle cx="443" cy="273" r="22" fill="#153b5c"/>
+    <text x="443" y="280" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">2</text>
+    <text x="477" y="280" class="step">INSPECT &amp; PRICE</text>
+    <text x="433" y="326" class="body">Format, duration and QC</text>
+    <text x="433" y="351" class="body">before any provider call</text>
+    <rect x="433" y="371" width="179" height="25" rx="12.5" fill="#edf3f8"/>
+    <text x="522" y="389" text-anchor="middle" class="small">BUDGET GATE</text>
+  </g>
+
+  <g>
+    <circle cx="788" cy="273" r="22" fill="#153b5c"/>
+    <text x="788" y="280" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">3</text>
+    <text x="822" y="280" class="step">TRANSCRIBE</text>
+    <text x="778" y="326" class="body">Provider routes stay distinct</text>
+    <text x="778" y="351" class="body">with raw evidence retained</text>
+    <rect x="778" y="371" width="196" height="25" rx="12.5" fill="#edf3f8"/>
+    <text x="876" y="389" text-anchor="middle" class="small">OPENAI · MERaLiON · QWEN</text>
+  </g>
+
+  <g>
+    <circle cx="1133" cy="273" r="22" fill="#0f8f7f"/>
+    <text x="1133" y="280" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">4</text>
+    <text x="1167" y="280" class="step">COMPARE</text>
+    <text x="1123" y="326" class="body">Align candidate wording</text>
+    <text x="1123" y="351" class="body">and expose disagreement</text>
+    <rect x="1123" y="371" width="190" height="25" rx="12.5" fill="#e5f6f3"/>
+    <text x="1218" y="389" text-anchor="middle" class="small">GREEN · AMBER · RED</text>
+  </g>
+
+  <path d="M345 320 H395" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M690 320 H740" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+  <path d="M1035 320 H1085" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <!-- Assurance choice and branches -->
+  <path d="M1238 405 V446" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+  <rect x="1028" y="458" width="420" height="58" rx="29" fill="#153b5c"/>
+  <text x="1238" y="493" text-anchor="middle" class="branch">ADD TARGETED HUMAN VERIFICATION?</text>
+
+  <path d="M1238 516 V541 H780 V558" fill="none" stroke="#8aa0b5" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="978" y="537" class="small">NO</text>
+  <path d="M1238 516 V558" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+  <text x="1251" y="545" class="small">YES</text>
+
+  <g filter="url(#shadow)">
+    <rect x="605" y="570" width="350" height="116" rx="18" fill="#ffffff" stroke="#d5e0ea"/>
+    <rect x="1038" y="570" width="400" height="116" rx="18" fill="#e5f6f3" stroke="#0f8f7f" stroke-width="2"/>
+  </g>
+
+  <text x="635" y="607" class="eyebrow">AUTOMATED ROUTE</text>
+  <text x="635" y="638" class="step">No human decision recorded</text>
+  <text x="635" y="666" class="body">Export remains clearly labelled automated.</text>
+
+  <circle cx="1076" cy="607" r="22" fill="#0f8f7f"/>
+  <text x="1076" y="614" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">5</text>
+  <text x="1110" y="613" class="step">VERIFY SELECTED CLIPS</text>
+  <text x="1068" y="645" class="body">Exact audio windows only</text>
+  <text x="1068" y="670" class="body">Separate word and speaker decisions</text>
+
+  <!-- Merge, export and learn -->
+  <path d="M780 686 V714 H937 V734" fill="none" stroke="#8aa0b5" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M1238 686 V714 H1007 V734" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="795" y="746" width="330" height="90" rx="18" fill="#153b5c"/>
+    <rect x="1215" y="746" width="325" height="90" rx="18" fill="#ffffff" stroke="#0f8f7f" stroke-width="2"/>
+  </g>
+
+  <circle cx="837" cy="791" r="22" fill="#0f8f7f"/>
+  <text x="837" y="798" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">6</text>
+  <text x="875" y="787" font-family="Segoe UI, Arial" font-size="19" font-weight="700" fill="#ffffff">EXPORT</text>
+  <text x="875" y="813" font-family="Segoe UI, Arial" font-size="14" fill="#dbe8f2">Transcript + provenance + assurance label</text>
+
+  <path d="M1125 791 H1203" fill="none" stroke="#0f8f7f" stroke-width="4" marker-end="url(#arrow)"/>
+  <circle cx="1257" cy="791" r="22" fill="#0f8f7f"/>
+  <text x="1257" y="798" text-anchor="middle" font-family="Segoe UI, Arial" font-size="18" font-weight="700" fill="#ffffff">7</text>
+  <text x="1295" y="787" class="step">LEARN</text>
+  <text x="1295" y="813" class="body">Quality · effort · cost · trust</text>
+
+  <!-- Trust architecture strip -->
+  <rect x="60" y="853" width="1480" height="35" rx="17.5" fill="#eaf0f6"/>
+  <text x="800" y="876" text-anchor="middle" class="control">
+    DRY-RUN DEFAULT  ·  EXPLICIT PAID-RUN APPROVAL  ·  PER-JOB COST CAP  ·  PROVIDER EVIDENCE RETAINED  ·  PRIVATE AUDIO EXCLUDED FROM PUBLIC RELEASES
+  </text>
+</svg>
