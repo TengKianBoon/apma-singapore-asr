@@ -37,6 +37,24 @@ separate, disagreement remains visible, and a human retains the final judgment.
 The project is deliberately single-user and local-dashboard first. Real provider
 runs are opt-in; development and CI remain dry-run by default.
 
+## Research Before Code
+
+APMA did not begin by selecting an API. The project first examined Singapore
+Hokkien's historical and regional context, its Xiamen/Quanzhou/Zhangzhou
+influences, its relationship with Taiwanese Minnan, natural local
+code-switching, and the changing evidence behind provider capability claims.
+The resulting delta register became product requirements for provenance,
+provider-neutral routing, uncertainty, human verification, and representative
+evaluation.
+
+![APMA research before code: Hokkien domain discovery to responsible architecture](docs/assets/apma-research-to-architecture.png)
+
+The [Hokkien domain-discovery decision record](docs/HOKKIEN_DOMAIN_DISCOVERY.md)
+shows how the research became architecture while keeping published sources,
+provider claims, bounded tests, human decisions, and unresolved gaps separate.
+Reference material supported context-grounded model-assisted analysis; APMA
+does not claim to have fine-tuned provider model weights.
+
 ## What Makes The Project Unusual
 
 - It combines Singapore-focused and multilingual providers without silently
@@ -82,6 +100,8 @@ Southeast Asian recorded-conversation evidence.
 Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [architecture](ARCHITECTURE.md) and
 [transcription product contract](product-specs/APMA_TRANSCRIPTION_PRODUCT_CONTRACT.md).
+The [Hokkien domain-discovery record](docs/HOKKIEN_DOMAIN_DISCOVERY.md) captures
+the research-to-requirements method and its evidence boundaries.
 The [targeted human verification workflow](docs/TARGETED_HUMAN_VERIFICATION.md)
 defines the optional low-friction assurance step and its honest completion labels.
 The [Release 0.2 record](docs/RELEASE_0_2_TARGETED_VERIFICATION.md) captures the

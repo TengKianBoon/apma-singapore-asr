@@ -26,6 +26,11 @@ usage, Xiamen/Quanzhou/Zhangzhou influences, Taiwanese variants, Mandarin, and
 local English or Malay code-switching rather than treating every Chinese
 utterance as Mandarin.
 
+The [Hokkien domain-discovery decision record](HOKKIEN_DOMAIN_DISCOVERY.md)
+documents how historical, regional, provider, and unresolved evidence was
+converted into requirements without describing context-grounded model use as
+weight fine-tuning.
+
 Provider capability is therefore a hypothesis to test, not proof of accuracy on
 a user's recording. The evaluation design includes duration and timestamp
 coverage, code-switch preservation, meaning-unit accuracy, names and numbers,
