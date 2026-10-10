@@ -1,13 +1,22 @@
-# APMA V5 Transcription Assurance MVP
+# APMA — Singapore Multilingual Transcription Assurance
 
 An auditable, safety-first workflow for turning existing multilingual audio
 files into provider-attributed transcripts, reviewable evidence, optional
 minutes, and portable exports. APMA is file-based and asynchronous; it is not a
 real-time meeting assistant.
 
-[![CI](https://github.com/TengKianBoon/APMA_V5_Audio_MVP/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/APMA_V5_Audio_MVP/actions/workflows/ci.yml)
+[![CI](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml)
 
 ![APMA professional dashboard using a synthetic legacy-audio fixture](docs/assets/apma-dashboard-synthetic.png)
+
+## From Audio To Accountable Output
+
+`Import → Inspect & price → Transcribe → Compare → Verify selected clips → Export → Learn from pilot evidence`
+
+APMA keeps the original recording, provider evidence, human decisions, and
+derived outputs distinct. AI identifies where attention is needed; people
+listen only to the relevant clips and verify the words and speakers before
+release.
 
 ## Why APMA
 
@@ -40,9 +49,9 @@ runs are opt-in; development and CI remain dry-run by default.
   explicit paid-run approval, cost caps, retained provenance, exception-based
   review, and public-release confidentiality checks.
 
-The defensible portfolio claim is therefore not "perfect Hokkien ASR." It is a
-governed, reviewable method for turning uneven local-language model capability
-into useful Southeast Asian recorded-conversation evidence.
+The product boundary is therefore not "perfect Hokkien ASR." It is a governed,
+reviewable method for turning uneven local-language model capability into useful
+Southeast Asian recorded-conversation evidence.
 
 ## What You Can Inspect
 
@@ -73,11 +82,13 @@ Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [transcription product contract](product-specs/APMA_TRANSCRIPTION_PRODUCT_CONTRACT.md).
 The [targeted human verification workflow](docs/TARGETED_HUMAN_VERIFICATION.md)
 defines the optional low-friction assurance step and its honest completion labels.
-The [AI product competency and AIRI roadmap](docs/AIRI_PRODUCT_COMPETENCY_ROADMAP.md)
-maps the work to product decisions, governance, security, trust, adoption, and
-measurable value without claiming an AIRI certification.
-The [solution architecture and FDE evidence map](docs/SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md)
-links role claims to inspectable artifacts, browser QA, and explicit gaps.
+The [Release 0.2 record](docs/RELEASE_0_2_TARGETED_VERIFICATION.md) captures the
+shipped changes, Docker verification, and current claim boundary.
+The [AI product delivery roadmap](docs/AI_PRODUCT_DELIVERY_ROADMAP.md) connects
+product decisions to governance, security, trust, adoption, and measurable
+value. The [engineering decisions and field learnings](docs/ENGINEERING_DECISIONS_AND_FIELD_LEARNINGS.md)
+connect design choices to inspectable artifacts, browser QA, operational
+constraints, and explicit limitations.
 The [consented pilot runbook](docs/CONSENTED_PILOT_RUNBOOK.md) defines the
 operating sequence, metric denominators, governance gates, and claim boundary.
 The [commercial pilot pricing decision](docs/COMMERCIAL_PRICING.md) documents

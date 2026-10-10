@@ -48,7 +48,7 @@ This increment remains a local, single-user workflow. It does not add payment, m
 4. Added speaker-sensitive selection for opt-in jobs when provider-native evidence contains multiple speakers, missing speaker labels, or overlapping differently labelled segments. Classic non-opt-in jobs do not acquire a new speaker-review completion gate.
 5. Added selected-window metrics and the three bounded assurance labels. The workflow explicitly records that no accuracy uplift is claimed.
 6. Added replay and playback speed controls, separate speaker buttons, filter-aware outstanding state, and a visible evidence-preservation message.
-7. Updated the public-safe architecture, showcase, professional-flow, README, and solution-architecture/FDE evidence documents.
+7. Updated the public-safe architecture, showcase, professional flow, README, and engineering-decision records.
 
 Verification completed with no live provider call:
 

@@ -1,8 +1,7 @@
 # APMA Consented Pilot Runbook
 
 Status: local, single-user pilot protocol. This is an operating aid, not legal
-advice, AIRI certification, permission to recruit, or permission to process a
-particular recording.
+advice, permission to recruit, or permission to process a particular recording.
 
 ## Pilot question
 
@@ -10,7 +9,7 @@ Can APMA help independent users turn difficult, existing Southeast Asian audio
 into a reviewable record with less effort and acceptable quality, cost, and
 trust—without hiding model uncertainty or weakening data controls?
 
-This is an initial proof pilot, not production deployment or AIRI L4 proof.
+This is an initial proof pilot, not production deployment or broad capability proof.
 Start with 3–5 consented design partners and require at least two completed jobs
 per partner before interpreting repeat use. Expand only after the calibration
 and governance gates below pass.
@@ -125,32 +124,22 @@ following gates apply regardless of commercial performance:
 Do not replace a missed threshold after results arrive merely to make the pilot
 look successful. Record the miss, correction, retest, and decision.
 
-## AIRI and FDE evidence use
+## Delivery evidence use
 
-The current AIRI Framework describes observable behavioural evidence across
-five pillars and states that capability changes when behaviour changes, not
-when training activity or self-description changes. See the [AIRI Framework](https://airi.foundation/)
-and [pAIRI specification-thinking and orchestration dimensions](https://airi.foundation/framework/pairi/).
+This pilot can strengthen evidence for:
 
-This pilot can strengthen:
+- an end-to-end decision loop connecting users, providers, evidence, controls,
+  cost, review, and exit criteria;
+- field discovery and adaptation inside a real user workflow;
+- incident, support, acceptance, and correction learning;
+- named ownership, learning cadence, adoption, and changed work;
+- consent, purpose, provider, retention, incident, and human-judgment controls;
+- baseline/post effort, repeat use, willingness to pay, and unit economics;
+- consented reference units, annotation quality, and drift history; and
+- repeatable jobs, event integrity, tests, monitored controls, and evidence export.
 
-- **Solution Architecture:** a deployed decision loop connecting users,
-  providers, evidence, controls, cost, review, and exit criteria;
-- **FDE:** field discovery, adaptation in a real user workflow, incident and
-  support learning, measurable acceptance, and rapid bounded correction;
-- **AIRI Leadership & Culture:** named ownership, learning cadence, adoption,
-  and changed work;
-- **Ethics & Governance:** consent, purpose, provider, retention, incident, and
-  human-judgment controls;
-- **Business Value:** baseline/post effort, repeat use, willingness to pay, and
-  unit economics;
-- **Data Foundation:** consented reference units, annotation quality, and drift
-  history; and
-- **Infrastructure & Standards:** repeatable jobs, event integrity, tests,
-  monitored controls, and evidence export.
-
-It does not justify claiming AIRI L4, senior FDE deployment, production scale,
-or broad dialect accuracy. Those claims require larger, independent,
+It does not justify claiming production scale, broad dialect accuracy, or
+repeatable commercial adoption. Those claims require larger, independent,
 transferable, governed outcomes.
 
 ## Publication boundary

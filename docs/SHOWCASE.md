@@ -96,13 +96,11 @@ flowchart LR
 | --- | --- | --- |
 | OpenAI transcription and diarization | Implemented and covered by guarded live workflows | Live execution requires an explicit paid-run approval and job cap. |
 | MERaLiON `M3ASR` | Selectable; adapter re-verified on 11.63 seconds of synthetic speech on 2026-09-11 | The hosted response resolved to `MERaLiON/MERaLiON-3-3B-ASR-CTM`. The temporary research/evaluation grant is time-limited; future availability remains a provider dependency. |
-| Gemini `Gem35T` | Selectable; adapter live-verified on the same synthetic sample | Provider-native speaker/timing evidence is retained; speaker labels are not identities. |
+| Gemini `Gem35T` | Selectable; adapter and contracts are dry-run tested | This public release does not include a current live-verification record for Gemini. Provider-native speaker/timing evidence remains separate from real identity. |
 | Qwen `QwenA3FT` | Selectable; asynchronous Filetrans re-verified inside APMA on 11.63 seconds of synthetic speech on 2026-09-11 | The live run used the size-bounded `data_uri` compatibility path and returned native timing plus one provider speaker label. Private OSS remains available for larger production chunks. |
 
 See [the current live-provider verification record](LIVE_PROVIDER_VERIFICATION_2026-09-11.md)
-for bounded MERaLiON/Qwen evidence,
-[the earlier verification record](LIVE_PROVIDER_VERIFICATION_2026-08-28.md)
-for MERaLiON/Gemini evidence, and
+for bounded MERaLiON/Qwen evidence and
 [the 4ofX transcription architecture](TRANSCRIPTION_ARCHITECTURE_4OFX.md) for
 provider-role and provenance decisions.
 
@@ -139,9 +137,9 @@ internet. The private development repository must not simply be switched to
 public because older private branches are outside the reviewed release
 boundary; use the clean-history release procedure instead.
 
-For the product, governance, adoption, and AIRI-aligned evidence plan, see the
-[AI product competency roadmap](AIRI_PRODUCT_COMPETENCY_ROADMAP.md).
-For a role-specific and limitation-aware evidence chain, see
-[Solution Architecture, FDE and AIRI Evidence](SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md).
+For the product, governance, adoption, and value plan, see the
+[AI product delivery roadmap](AI_PRODUCT_DELIVERY_ROADMAP.md).
+For an artifact-linked and limitation-aware decision chain, see
+[Engineering Decisions and Field Learnings](ENGINEERING_DECISIONS_AND_FIELD_LEARNINGS.md).
 For pilot operation and publication boundaries, see the
 [Consented Pilot Runbook](CONSENTED_PILOT_RUNBOOK.md).
