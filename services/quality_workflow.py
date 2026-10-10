@@ -16,7 +16,7 @@ from services import audio_project as audio_project_mod
 from services import chunker, ingest, job as job_mod, preprocess
 from services.config import Config, paid_cost_authorization_amount
 from services.final_draft import build_final_draft, write_final_draft_artifacts
-from services.human_review import ReviewWorkspace
+from services.human_review import ReviewWorkspace, speaker_sensitive_window_ids
 from services.speaker_overlay import attach_speaker_overlay
 from services.speaker_timeline import build_speaker_timeline, write_speaker_timeline
 from services.selective_rescue import (
@@ -532,6 +532,9 @@ def quality_result(manifest: dict[str, Any]) -> dict[str, Any]:
         ),
         "review_required_count": review_required_count,
         "review_url": quality.get("review_url"),
+        "targeted_human_verification": deepcopy(
+            quality.get("targeted_human_verification") or {}
+        ),
         "errors": deepcopy(manifest.get("errors") or []),
     }
 
@@ -546,6 +549,7 @@ def run_quality_workflow(
     transcriber_factory: Callable[[str], Any] = get_transcriber,
     stop_after_stage: str | None = None,
     source_filename: str | None = None,
+    targeted_human_verification_requested: bool = False,
 ) -> dict[str, Any]:
     """Run or resume the proven stages using the existing job manifest and artifacts."""
 
@@ -567,6 +571,25 @@ def run_quality_workflow(
             raise ValueError("Quality job cannot resume with different source audio")
         quality = _quality(manifest)
         quality["resume_count"] = int(quality.get("resume_count", 0)) + 1
+        verification = quality.get("targeted_human_verification")
+        if not isinstance(verification, dict):
+            verification = {}
+        was_requested = bool(verification.get("requested"))
+        is_requested = was_requested or bool(targeted_human_verification_requested)
+        verification.update(
+            {
+                "requested": is_requested,
+                "scope": "selected_flagged_windows",
+                "expectation": (
+                    "APMA selects unclear, conflicting, or speaker-sensitive clips; "
+                    "a human reviews only those clips. This is not full-audio review."
+                ),
+                "accuracy_uplift_claimed": False,
+            }
+        )
+        if is_requested and not was_requested:
+            verification["requested_at"] = _utc_now()
+        quality["targeted_human_verification"] = verification
         if quality.get("overall_status") in {"REVIEW_REQUIRED", "COMPLETE"}:
             manifest["updated_at"] = _utc_now()
             job_mod.write_manifest(job_dir, manifest)
@@ -580,6 +603,18 @@ def run_quality_workflow(
                 "timeline_offset_seconds": float(timeline_offset_seconds),
                 "resume_count": 0,
                 "reuse_mode": bool(reuse_bundle),
+                "targeted_human_verification": {
+                    "requested": bool(targeted_human_verification_requested),
+                    "requested_at": (
+                        _utc_now() if targeted_human_verification_requested else None
+                    ),
+                    "scope": "selected_flagged_windows",
+                    "expectation": (
+                        "APMA selects unclear, conflicting, or speaker-sensitive clips; "
+                        "a human reviews only those clips. This is not full-audio review."
+                    ),
+                    "accuracy_uplift_claimed": False,
+                },
             }
         )
         job_mod.write_manifest(job_dir, manifest)
@@ -906,18 +941,46 @@ def run_quality_workflow(
         if not _stage_completed(manifest, "REVIEW"):
             _stage_start(job_dir, manifest, "REVIEW")
             manifest = attach_gem35t_speaker_evidence(job_dir, manifest)
+            speaker_review_ids: set[str] = set()
+            if bool(
+                _quality(manifest)
+                .get("targeted_human_verification", {})
+                .get("requested")
+            ):
+                overlay_item = _quality(manifest).get("outputs", {}).get(
+                    "speaker_overlay", {}
+                )
+                overlay_path = Path(str(overlay_item.get("json") or ""))
+                if overlay_path.is_file():
+                    speaker_review_ids = speaker_sensitive_window_ids(
+                        json.loads(overlay_path.read_text(encoding="utf-8"))
+                    )
             workspace = ReviewWorkspace(
                 Path(_quality(manifest)["outputs"]["final_draft"]["json"]),
                 Path(_quality(manifest)["review_audio_dir"]),
                 job_dir / "quality" / "review",
+                targeted_verification_requested=bool(
+                    _quality(manifest)
+                    .get("targeted_human_verification", {})
+                    .get("requested")
+                ),
+                source_audio_seconds=float(
+                    manifest.get("preprocess", {}).get("duration_seconds", 0.0) or 0.0
+                ),
+                speaker_review_window_ids=speaker_review_ids,
             )
             reviewed_outputs = workspace.write_reviewed_outputs()
             view = workspace.view()
             _quality(manifest)["outputs"]["final_reviewed"] = reviewed_outputs
-            unresolved = int(view["statistics"]["unresolved_windows"])
+            unresolved = int(
+                view["targeted_verification"]["windows_requiring_attention"]
+            )
             overall = "REVIEW_REQUIRED" if unresolved else "COMPLETE"
             _quality(manifest)["overall_status"] = overall
             _quality(manifest)["review_url"] = f"/review?job_id={job_id}"
+            _quality(manifest)["targeted_human_verification"]["summary"] = deepcopy(
+                view["targeted_verification"]
+            )
             manifest["state"] = overall.lower()
             _stage_complete(
                 job_dir,

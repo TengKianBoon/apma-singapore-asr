@@ -1,0 +1,63 @@
+{
+  "schema_version": "apma.public-pilot-workflow-verification.v1",
+  "verification_date": "2026-09-11",
+  "scope": "Privacy-minimised consented-pilot evidence workflow and outcome aggregation",
+  "environment": {
+    "runtime": "Docker",
+    "dry_run": true,
+    "transcription_engine": "mock",
+    "paid_provider_calls": 0
+  },
+  "input": {
+    "classification": "temporary synthetic QA fixture",
+    "private_audio_used": false,
+    "temporary_runtime_artifacts_removed_after_test": true
+  },
+  "automated_verification": {
+    "complete_suite": "288 passed",
+    "pilot_service_tests": "5 passed",
+    "focused_pilot_and_dashboard_tests": "38 passed"
+  },
+  "checks": [
+    {
+      "id": "pilot-form-rendering",
+      "result": "PASS",
+      "evidence": "The Pilot outcome workspace rendered structured identity, governance, review-effort, unit-economics, reference-accuracy, trust, and adoption controls."
+    },
+    {
+      "id": "synthetic-exclusion",
+      "result": "PASS",
+      "evidence": "A synthetic QA record saved with a verified event chain and the aggregate remained at zero evidence-eligible jobs and zero participants."
+    },
+    {
+      "id": "consent-progressive-disclosure",
+      "result": "PASS",
+      "evidence": "Consent and retention controls were disabled for synthetic QA and became available only after selecting Consented private pilot recording."
+    },
+    {
+      "id": "incomplete-consent-rejection",
+      "result": "PASS",
+      "evidence": "The browser rejected a consented-private save without an external consent record identifier; no evidence-eligible record was created."
+    },
+    {
+      "id": "privacy-allowlist",
+      "result": "PASS",
+      "evidence": "Service tests rejected direct identifiers and free-text fields, and the aggregate suppressed participant, consent-record, source-hash, transcript, and audio details."
+    },
+    {
+      "id": "evidence-integrity",
+      "result": "PASS",
+      "evidence": "Per-job events formed a verified append-only hash chain and the dashboard reported the current structured record without copying transcript text."
+    },
+    {
+      "id": "automated-regression",
+      "result": "PASS",
+      "evidence": "The complete Docker dry-run suite passed after the pilot measurement implementation."
+    }
+  ],
+  "limitations": [
+    "This verifies pilot controls and measurement infrastructure, not external adoption, dialect accuracy, trust improvement, or commercial outcomes.",
+    "No participant was recruited and no consent, retention, or publication authority is asserted by this test.",
+    "Small-cohort publication risk still requires owner review before sharing any real aggregate."
+  ]
+}

@@ -13,6 +13,8 @@ It can:
 - show transcript, minutes, action items, and summary outputs
 - open the self-contained transcript HTML or download SRT/VTT when those exports exist
 - show the absolute subproject, original-audio, MP3, and MP3-chunks folder addresses
+- record structured, pseudonymous pilot outcomes and download a privacy-minimised
+  cohort summary
 
 The dashboard route does not translate transcript wording or directly invoke
 DOCX/PDF export. The meeting-archive service can generate DOCX and PDF derived
@@ -21,6 +23,24 @@ views while keeping final JSON authoritative.
 `full_transcript.json` remains the canonical transcript authority. The dashboard's HTML, SRT,
 and VTT links expose deterministic derivatives of that JSON. SRT/VTT omit untimed transcript
 segments rather than assigning guessed timestamps.
+
+## Pilot Outcome Evidence
+
+After opening a retained job, use **Pilot outcome** only for synthetic QA or a
+separately governed consented pilot. The form records pseudonymous identifiers,
+structured governance attestations, review/cost inputs, human-reference counts,
+and trust/adoption answers. It derives duration, provider cost, segments, and
+corrections from the job.
+
+`POST /api/pilot/evidence` appends a hash-linked event and updates the current
+job view. `GET /api/pilot/summary?cohort_code=<code>` returns a cohort aggregate.
+The aggregate excludes synthetic records and suppresses participant codes,
+consent-record IDs, source hashes, transcript text, and audio.
+
+Do not enter names, emails, phone numbers, addresses, notes, excerpts, or other
+free text. For real participants, keep the consent record and code mapping
+outside the job folder and Git. Follow
+`docs/CONSENTED_PILOT_RUNBOOK.md` before any external pilot use.
 
 ## Transcription Models And Speaker Labels
 
@@ -82,8 +102,7 @@ billable charge. The default remains dry-run and does not call external APIs.
 Open PowerShell, then go to the repo folder:
 
 ```powershell
-$repositoryPath = Read-Host "Path to the cloned apma-singapore-asr repository"
-Set-Location -LiteralPath $repositoryPath
+cd "C:\path\to\apma-singapore-asr"
 ```
 
 Before starting a live provider route, set that provider's API key in your

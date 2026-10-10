@@ -1,4 +1,4 @@
-# APMA — Singapore Multilingual ASR Showcase
+# APMA — Singapore Multilingual Transcription Assurance
 
 An auditable, safety-first workflow for turning existing multilingual audio
 files into provider-attributed transcripts, reviewable evidence, optional
@@ -8,6 +8,15 @@ real-time meeting assistant.
 [![CI](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml/badge.svg)](https://github.com/TengKianBoon/apma-singapore-asr/actions/workflows/ci.yml)
 
 ![APMA professional dashboard using a synthetic legacy-audio fixture](docs/assets/apma-dashboard-synthetic.png)
+
+## From Audio To Accountable Output
+
+`Import → Inspect & price → Transcribe → Compare → Verify selected clips → Export → Learn from pilot evidence`
+
+APMA keeps the original recording, provider evidence, human decisions, and
+derived outputs distinct. AI identifies where attention is needed; people
+listen only to the relevant clips and verify the words and speakers before
+release.
 
 ## Why APMA
 
@@ -40,9 +49,9 @@ runs are opt-in; development and CI remain dry-run by default.
   explicit paid-run approval, cost caps, retained provenance, exception-based
   review, and public-release confidentiality checks.
 
-The defensible portfolio claim is therefore not "perfect Hokkien ASR." It is a
-governed, reviewable method for turning uneven local-language model capability
-into useful Southeast Asian recorded-conversation evidence.
+The product boundary is therefore not "perfect Hokkien ASR." It is a governed,
+reviewable method for turning uneven local-language model capability into useful
+Southeast Asian recorded-conversation evidence.
 
 ## What You Can Inspect
 
@@ -52,6 +61,9 @@ into useful Southeast Asian recorded-conversation evidence.
   fail-closed readiness and cost gates.
 - Raw provider evidence, provider-native timing/speaker metadata, deterministic
   transcript exports, comparison, reconciliation, and human-review history.
+- Optional targeted human verification that presents only flagged exact clips,
+  records content and speaker decisions separately, and reports actual selected
+  audio coverage without claiming an unmeasured accuracy uplift.
 - A local dashboard for upload, exact budget approval, transcription, review,
   minutes generation, and retained output paths. Its guided
   `Audio → Outcome → Cost → Review` flow keeps provider details available but
@@ -60,31 +72,30 @@ into useful Southeast Asian recorded-conversation evidence.
   non-private audio for MERaLiON and Qwen Filetrans.
 - Browser-tested synthetic import, upload progress, outcome routing, cost
   preflight, provider disclosure, and responsive layout, with no paid call.
+- A consent-gated Pilot outcome workflow that derives correction, duration and
+  provider-cost evidence; records bounded accuracy, adoption, unit-economics
+  and trust inputs; and exports aggregates without transcript text or direct
+  participant identifiers.
 
 Start with the [showcase walkthrough](docs/SHOWCASE.md), then see the
 [architecture](ARCHITECTURE.md) and
 [transcription product contract](product-specs/APMA_TRANSCRIPTION_PRODUCT_CONTRACT.md).
-The [AI product competency and AIRI roadmap](docs/AIRI_PRODUCT_COMPETENCY_ROADMAP.md)
-maps the work to product decisions, governance, security, trust, adoption, and
-measurable value without claiming an AIRI certification.
-The [solution architecture and FDE evidence map](docs/SOLUTION_ARCHITECTURE_FDE_EVIDENCE.md)
-links role claims to inspectable artifacts, browser QA, and explicit gaps.
+The [targeted human verification workflow](docs/TARGETED_HUMAN_VERIFICATION.md)
+defines the optional low-friction assurance step and its honest completion labels.
+The [Release 0.2 record](docs/RELEASE_0_2_TARGETED_VERIFICATION.md) captures the
+shipped changes, Docker verification, and current claim boundary.
+The [AI product delivery roadmap](docs/AI_PRODUCT_DELIVERY_ROADMAP.md) connects
+product decisions to governance, security, trust, adoption, and measurable
+value. The [engineering decisions and field learnings](docs/ENGINEERING_DECISIONS_AND_FIELD_LEARNINGS.md)
+connect design choices to inspectable artifacts, browser QA, operational
+constraints, and explicit limitations.
+The [consented pilot runbook](docs/CONSENTED_PILOT_RUNBOOK.md) defines the
+operating sequence, metric denominators, governance gates, and claim boundary.
+The [commercial pilot pricing decision](docs/COMMERCIAL_PRICING.md) documents
+the pay-as-you-go launch prices, market benchmarks, margin floor, and payment
+go-live gates without enabling live charging.
 Public releases must follow the
 [clean-history release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md).
-
-## My contribution
-
-I identified an underserved local-language problem, established the product
-and evidence boundaries, selected and re-evaluated providers as their
-capabilities changed, directed implementation, enforced privacy and cost
-controls, and validated bounded live routes using non-private audio. AI agents
-accelerated implementation; I retained responsibility for product direction,
-risk acceptance, commercial priorities, and release decisions.
-
-The maturity claim is deliberately bounded: this is evidence of hands-on AI
-product orchestration and responsible-AI controls while building toward
-AIRI Level 4-aligned AI Catalyst capability. It is a self-assessment, not an
-AIRI certification.
 
 ## Singapore model acknowledgement
 
@@ -129,6 +140,8 @@ For the browser-based local dashboard, including upload, budget locks, supported
 For current bounded MERaLiON and Qwen evidence, see
 `docs/LIVE_PROVIDER_VERIFICATION_2026-09-11.md`. For provider decisions,
 benchmark criteria, and provenance, see `docs/TRANSCRIPTION_ARCHITECTURE_4OFX.md`.
+For the privacy-minimised external-pilot evidence loop, see
+`docs/CONSENTED_PILOT_RUNBOOK.md`.
 
 ## Docker Quickstart (dry-run)
 
@@ -234,6 +247,9 @@ Selecting a transcription engine:
 - OpenAI adapter is opt-in and protected by DRY_RUN + explicit enable flags and cost/file-size preflight; do not enable in CI.
 
 Architecture status: [APMA 4ofX Transcription Architecture Status](docs/TRANSCRIPTION_ARCHITECTURE_4OFX.md)
+
+
+
 Example output (dry-run verification):
 
 ```

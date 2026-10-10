@@ -4,11 +4,16 @@ Status: product decision and implementation boundary for the next UI tranche.
 This document does not authorise public audio upload, production hosting, or
 live provider expenditure.
 
-Implementation snapshot (2026-09-11): the lean local tranche now includes the
+Implementation snapshot (2026-10-10): the lean local tranche now includes the
 guided import/outcome/cost/review shell, upload progress, recent retained jobs,
 timestamp-linked playback, focused exception-review filters, human speaker
 labels, structured exports, and trust evidence. Durable background processing
-and multi-user features remain deferred as described below.
+and multi-user features remain deferred as described below. The local Pilot
+outcome tab now operationalises consent-gated, pseudonymous outcome measurement
+without turning APMA into a general analytics platform. Compare & Verify also
+offers optional targeted human verification: exact flagged clips, separate
+content and speaker decisions, honest completion labels, and measured review
+coverage without an unsupported accuracy claim.
 
 ## Product Experience Objective
 
@@ -265,6 +270,13 @@ For each exception, the reviewer can:
 4. rename a speaker without hiding the provider label;
 5. mark unresolved when the audio is insufficient; and
 6. move to the next outstanding item.
+
+The targeted-verification option records intent before the run, then reports
+the actual selected clip count, selected-audio duration and source-audio share.
+Completion is labelled as automated, selected-window human confirmed, or
+selected-window human reviewed with unresolved items. It never implies full-
+audio review. See
+[the targeted verification decision](../docs/TARGETED_HUMAN_VERIFICATION.md).
 
 Save status and correction history must be visible. Undo should reverse the
 human edit while leaving original provider evidence unchanged.

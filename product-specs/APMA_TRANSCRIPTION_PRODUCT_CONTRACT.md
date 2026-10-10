@@ -73,6 +73,11 @@ The current repository implements this local, single-user baseline:
   correction history; original provider evidence remains unchanged.
 - Canonical JSON and derived HTML/TXT/SRT/VTT/DOCX/PDF exports. Untimed content
   does not receive fabricated timing.
+- A local consented-pilot evidence loop derives duration, provider cost,
+  corrections and review state from retained jobs; captures bounded adoption,
+  accuracy, economics and trust inputs; preserves hash-linked revisions; and
+  exports privacy-minimised cohort summaries without transcript text or direct
+  participant identifiers.
 - Preflight job cost caps, exact operator approval, run-aware actual-spend
   stopping, bounded retries, resumability, and SHA-256-validated cache reuse.
 - Dependency-free offline WER/CER and transcript-contract regression checks,
