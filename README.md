@@ -18,6 +18,8 @@ derived outputs distinct. AI identifies where attention is needed; people
 listen only to the relevant clips and verify the words and speakers before
 release.
 
+![APMA transcription assurance workflow: provider evidence, optional targeted human verification, accountable export, and pilot learning](docs/assets/apma-assurance-workflow.png)
+
 ## Why APMA
 
 APMA is designed for the difficult part of transcription work: preserving what
