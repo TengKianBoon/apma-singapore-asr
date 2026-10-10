@@ -75,6 +75,9 @@ The [solution architecture and FDE evidence map](docs/SOLUTION_ARCHITECTURE_FDE_
 links role claims to inspectable artifacts, browser QA, and explicit gaps.
 The [consented pilot runbook](docs/CONSENTED_PILOT_RUNBOOK.md) defines the
 operating sequence, metric denominators, governance gates, and claim boundary.
+The [commercial pilot pricing decision](docs/COMMERCIAL_PRICING.md) documents
+the pay-as-you-go launch prices, market benchmarks, margin floor, and payment
+go-live gates without enabling live charging.
 Public releases must follow the
 [clean-history release checklist](docs/PUBLIC_RELEASE_CHECKLIST.md).
 
